@@ -24,23 +24,42 @@ class MyApp extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              const CircleAvatar(
+                radius: 48,
+                backgroundImage: AssetImage('assets/images/profile.jpg'),
+              ),
+              const SizedBox(height: 12),
               Text(
-                '$studentId - $studentName',
+                studentName,
                 style: const TextStyle(
-                  fontSize: 18,
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 12),
-              const Text(
-                'Belajar Widget Tree',
-                style: TextStyle(fontSize: 16),
+              Text(
+                studentId,
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey,
+                ),
               ),
               const SizedBox(height: 12),
-              const Icon(
-                Icons.widgets,
-                size: 48,
-                color: Colors.deepPurple,
+              const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.phone_android, color: Colors.blue),
+                  SizedBox(width: 8),
+                  Text('Mobile Programming Student'),
+                ],
+              ),
+              const SizedBox(height: 8),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 24.0),
+                child: Text(
+                  'Tertarik mengembangkan aplikasi mobile yang responsif dan memiliki UI/UX yang interaktif.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 13, fontStyle: FontStyle.italic),
+                ),
               ),
             ],
           ),
