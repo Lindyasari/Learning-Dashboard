@@ -57,7 +57,7 @@ class MyApp extends StatelessWidget {
                         const Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.phone_android, size: 18, color: Colors.blue),
+                            Icon(Icons.school, size: 18, color: Colors.blue),
                             SizedBox(width: 6),
                             Text(
                               'Prodi Pendidikan Teknik Informatika',
@@ -72,7 +72,7 @@ class MyApp extends StatelessWidget {
 
                 const SizedBox(height: 16),
 
-                // Bagian Kartu Statistik menggunakan Reusable Widget (StatCard)
+                // Bagian Kartu Statistik menggunakan Reusable Widget
                 Row(
                   children: [
                     _buildStatCard('8', 'Widget', Icons.widgets),
@@ -82,6 +82,11 @@ class MyApp extends StatelessWidget {
                     _buildStatCard('1', 'State', Icons.sync),
                   ],
                 ),
+
+                const SizedBox(height: 16),
+
+                // GreetingCard (StatefulWidget) untuk Tahap 9
+                const GreetingCard(),
               ],
             ),
           ),
@@ -90,7 +95,7 @@ class MyApp extends StatelessWidget {
     );
   }
 
-  // Reusable Function Widget untuk Kartu Statistik
+  // Reusable Function Widget
   Widget _buildStatCard(String value, String label, IconData icon) {
     return Expanded(
       child: Card(
@@ -121,6 +126,83 @@ class MyApp extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+// Komponen GreetingCard (StatefulWidget)
+class GreetingCard extends StatefulWidget {
+  const GreetingCard({super.key});
+
+  @override
+  State<GreetingCard> createState() => _GreetingCardState();
+}
+
+class _GreetingCardState extends State<GreetingCard> {
+  final TextEditingController controller = TextEditingController();
+  String message = 'Belum ada pesan';
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            Text(
+              '$studentId - $studentName',
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: controller,
+              decoration: const InputDecoration(
+                labelText: 'Ketik pesan Anda',
+                border: OutlineInputBorder(),
+                isDense: true,
+              ),
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  message = controller.text.trim().isEmpty
+                      ? 'Input masih kosong'
+                      : controller.text.trim();
+                });
+              },
+              child: const Text('Tampilkan Pesan'),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                message,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 14),
+              ),
+            ),
+          ],
         ),
       ),
     );
