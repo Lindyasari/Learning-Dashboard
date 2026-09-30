@@ -19,13 +19,30 @@ class MyApp extends StatelessWidget {
           title: const Text('Flutter UI Fundamentals'),
         ),
         body: Center(
-          child: Text(
-            '$studentId\n$studentName',
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-            ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                '$studentId - $studentName',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'Belajar Widget Tree',
+                style: TextStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 12),
+              const Icon(
+                Icons.widgets,
+                size: 48,
+                color: Colors.deepPurple,
+              ),
+            ],
           ),
         ),
       ),
