@@ -12,9 +12,9 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const TopicListDashboard(),
+      home: TopicListDashboard(),
     );
   }
 }
@@ -52,6 +52,9 @@ class _TopicListDashboardState extends State<TopicListDashboard> {
 
   @override
   Widget build(BuildContext context) {
+    // 3. Hitung jumlah item selesai menggunakan where().length sesuai worksheet
+    final int completed = topics.where((item) => item['done'] == true).length;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Flutter UI Fundamentals'),
@@ -126,56 +129,57 @@ class _TopicListDashboardState extends State<TopicListDashboard> {
 
           const Divider(height: 1),
 
-          // Judul Seksi Daftar Topik
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Daftar Topik Pembelajaran',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                  color: Colors.blue,
+          // 4. Tampilkan teks ringkasan di atas list: "x dari y topik selesai"
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Daftar Topik Pembelajaran',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: Colors.blue,
+                  ),
                 ),
-              ),
+                Text(
+                  '$completed dari ${topics.length} topik selesai',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
             ),
           ),
 
-          // ListView.builder dibungkus Expanded
+          // 1. Menggunakan ListView.separated
           Expanded(
-            child: ListView.builder(
-              itemCount: topics.length,
+            child: ListView.separated(
               padding: const EdgeInsets.symmetric(horizontal: 12.0),
+              itemCount: topics.length,
+              separatorBuilder: (context, index) => const SizedBox(height: 4),
               itemBuilder: (context, index) {
                 final item = topics[index];
-                final bool isDone = item['done'] == true;
 
                 return Card(
-                  elevation: 1,
-                  margin: const EdgeInsets.symmetric(vertical: 4.0),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                  margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   child: ListTile(
+                    // 2. Tampilkan status Selesai/Belum menggunakan warna dan icon yang berbeda
                     leading: Icon(
-                      isDone ? Icons.check_circle : Icons.circle_outlined,
-                      color: isDone ? Colors.green : Colors.grey,
+                      item['done'] == true ? Icons.check_circle : Icons.schedule,
+                      color: item['done'] == true ? Colors.green : Colors.orange,
                     ),
-                    title: Text(
-                      item['title'] as String,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        decoration:
-                            isDone ? TextDecoration.lineThrough : null,
-                        color: isDone ? Colors.black87 : Colors.black,
-                      ),
-                    ),
+                    title: Text(item['title'] as String),
                     subtitle: Text(item['subtitle'] as String),
-                    trailing: Icon(
-                      isDone ? Icons.done : Icons.pending,
-                      size: 18,
-                      color: isDone ? Colors.green : Colors.orange,
+                    trailing: Text(
+                      item['done'] == true ? 'Selesai' : 'Belum',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: item['done'] == true ? Colors.green : Colors.orange,
+                      ),
                     ),
                   ),
                 );
