@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 
 const String studentName = 'Ni Komang Tri Lindyasari';
 const String studentId = '2415051017';
@@ -27,6 +29,25 @@ class TopicListDashboard extends StatefulWidget {
 }
 
 class _TopicListDashboardState extends State<TopicListDashboard> {
+  // Function pembaca JSON statik
+  Future<Map<String, dynamic>> loadStudentData() async {
+    final jsonString = await rootBundle.loadString(
+      'assets/data/student_data.json',
+    );
+    return jsonDecode(jsonString) as Map<String, dynamic>;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Validasi pembacaan JSON via debugPrint saat pertama kali widget dibuka
+    loadStudentData().then((data) {
+      debugPrint('=== HASIL DECODING JSON TAHAP 12 ===');
+      debugPrint('Mahasiswa: ${data['student']['nim']} - ${data['student']['name']}');
+      debugPrint('Jumlah Courses: ${(data['courses'] as List).length}');
+    });
+  }
+
   final List<Map<String, dynamic>> topics = [
     {
       'title': 'Git & GitHub',
@@ -52,7 +73,6 @@ class _TopicListDashboardState extends State<TopicListDashboard> {
 
   @override
   Widget build(BuildContext context) {
-    // 3. Hitung jumlah item selesai menggunakan where().length sesuai worksheet
     final int completed = topics.where((item) => item['done'] == true).length;
 
     return Scaffold(
@@ -129,9 +149,10 @@ class _TopicListDashboardState extends State<TopicListDashboard> {
 
           const Divider(height: 1),
 
-          // 4. Tampilkan teks ringkasan di atas list: "x dari y topik selesai"
+          // Teks Ringkasan Data
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -155,7 +176,7 @@ class _TopicListDashboardState extends State<TopicListDashboard> {
             ),
           ),
 
-          // 1. Menggunakan ListView.separated
+          // ListView.separated
           Expanded(
             child: ListView.separated(
               padding: const EdgeInsets.symmetric(horizontal: 12.0),
@@ -165,12 +186,15 @@ class _TopicListDashboardState extends State<TopicListDashboard> {
                 final item = topics[index];
 
                 return Card(
-                  margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   child: ListTile(
-                    // 2. Tampilkan status Selesai/Belum menggunakan warna dan icon yang berbeda
                     leading: Icon(
-                      item['done'] == true ? Icons.check_circle : Icons.schedule,
-                      color: item['done'] == true ? Colors.green : Colors.orange,
+                      item['done'] == true
+                          ? Icons.check_circle
+                          : Icons.schedule,
+                      color:
+                          item['done'] == true ? Colors.green : Colors.orange,
                     ),
                     title: Text(item['title'] as String),
                     subtitle: Text(item['subtitle'] as String),
@@ -178,7 +202,8 @@ class _TopicListDashboardState extends State<TopicListDashboard> {
                       item['done'] == true ? 'Selesai' : 'Belum',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: item['done'] == true ? Colors.green : Colors.orange,
+                        color:
+                            item['done'] == true ? Colors.green : Colors.orange,
                       ),
                     ),
                   ),
