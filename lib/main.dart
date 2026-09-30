@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
             padding: const EdgeInsets.all(16.0),
             child: Column(
               children: [
-                // Card untuk Mengelompokkan Informasi Profil Mahasiswa
+                // Card Profil Mahasiswa
                 Card(
                   elevation: 4,
                   shape: RoundedRectangleBorder(
@@ -69,64 +69,57 @@ class MyApp extends StatelessWidget {
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 16),
 
-                // Container dengan BoxDecoration untuk Elemen Ringkasan Statistik
-                Container(
-                  padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.shade50,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.blue.shade100),
-                  ),
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Column(
-                        children: [
-                          Text(
-                            '8',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blue,
-                            ),
-                          ),
-                          Text('Widget', style: TextStyle(fontSize: 12, color: Colors.grey)),
-                        ],
-                      ),
-                      Column(
-                        children: [
-                          Text(
-                            '4',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blue,
-                            ),
-                          ),
-                          Text('Layout', style: TextStyle(fontSize: 12, color: Colors.grey)),
-                        ],
-                      ),
-                      Column(
-                        children: [
-                          Text(
-                            '1',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blue,
-                            ),
-                          ),
-                          Text('State', style: TextStyle(fontSize: 12, color: Colors.grey)),
-                        ],
-                      ),
-                    ],
-                  ),
+                // Bagian Kartu Statistik menggunakan Reusable Widget (StatCard)
+                Row(
+                  children: [
+                    _buildStatCard('8', 'Widget', Icons.widgets),
+                    const SizedBox(width: 8),
+                    _buildStatCard('4', 'Layout', Icons.view_quilt),
+                    const SizedBox(width: 8),
+                    _buildStatCard('1', 'State', Icons.sync),
+                  ],
                 ),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Reusable Function Widget untuk Kartu Statistik
+  Widget _buildStatCard(String value, String label, IconData icon) {
+    return Expanded(
+      child: Card(
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 8.0),
+          child: Column(
+            children: [
+              Icon(icon, color: Colors.blue, size: 24),
+              const SizedBox(height: 6),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey,
+                ),
+              ),
+            ],
           ),
         ),
       ),
