@@ -25,40 +25,68 @@ class MyApp extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const CircleAvatar(
-                radius: 48,
+                radius: 44,
                 backgroundImage: AssetImage('assets/images/profile.jpg'),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
               Text(
                 studentName,
                 style: const TextStyle(
-                  fontSize: 20,
+                  fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               Text(
                 studentId,
                 style: const TextStyle(
-                  fontSize: 16,
+                  fontSize: 14,
                   color: Colors.grey,
                 ),
               ),
-              const SizedBox(height: 12),
-              const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.phone_android, color: Colors.blue),
-                  SizedBox(width: 8),
-                  Text('Mobile Programming Student'),
-                ],
-              ),
-              const SizedBox(height: 8),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 24.0),
-                child: Text(
-                  'Tertarik mengembangkan aplikasi mobile yang responsif dan memiliki UI/UX yang interaktif.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 13, fontStyle: FontStyle.italic),
+              const SizedBox(height: 16),
+              // Section Statistik menggunakan Row dan Column
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 12.0),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Column(
+                      children: [
+                        Text(
+                          '8',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text('Widget', style: TextStyle(color: Colors.grey)),
+                      ],
+                    ),
+                    Column(
+                      children: [
+                        Text(
+                          '4',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text('Layout', style: TextStyle(color: Colors.grey)),
+                      ],
+                    ),
+                    Column(
+                      children: [
+                        Text(
+                          '1',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text('State', style: TextStyle(color: Colors.grey)),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ],
