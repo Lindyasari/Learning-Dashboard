@@ -1,9 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show rootBundle;
-
-const String studentName = 'Ni Komang Tri Lindyasari';
-const String studentId = '2415051017';
+import 'package:flutter/services.dart';
 
 void main() {
   runApp(const MyApp());
@@ -14,239 +11,127 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: TopicListDashboard(),
+      title: 'Pemrograman Seluler - Tahap 13',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        useMaterial3: true,
+      ),
+      home: const DashboardPage(),
     );
   }
 }
 
-class TopicListDashboard extends StatefulWidget {
-  const TopicListDashboard({super.key});
+// Fungsi untuk membaca dan memuat file JSON dari assets/data/student_data.json
+Future<Map<String, dynamic>> loadStudentData() async {
+  // Delay 1 detik untuk simulasi efek loading (asynchronous)
+  await Future.delayed(const Duration(seconds: 1));
+  
+  // Membaca path file asset sesuai struktur folder di proyekmu
+  final String jsonString = await rootBundle.loadString('assets/data/student_data.json');
+  final Map<String, dynamic> data = jsonDecode(jsonString);
+  return data;
+}
+
+class DashboardPage extends StatefulWidget {
+  const DashboardPage({super.key});
 
   @override
-  State<TopicListDashboard> createState() => _TopicListDashboardState();
+  State<DashboardPage> createState() => _DashboardPageState();
 }
 
-class _TopicListDashboardState extends State<TopicListDashboard> {
-  // Function pembaca JSON statik
-  Future<Map<String, dynamic>> loadStudentData() async {
-    final jsonString = await rootBundle.loadString(
-      'assets/data/student_data.json',
-    );
-    return jsonDecode(jsonString) as Map<String, dynamic>;
-  }
+class _DashboardPageState extends State<DashboardPage> {
+  // Deklarasi late Future
+  late Future<Map<String, dynamic>> studentFuture;
 
   @override
   void initState() {
     super.initState();
-    // Validasi pembacaan JSON via debugPrint saat pertama kali widget dibuka
-    loadStudentData().then((data) {
-      debugPrint('=== HASIL DECODING JSON TAHAP 12 ===');
-      debugPrint('Mahasiswa: ${data['student']['nim']} - ${data['student']['name']}');
-      debugPrint('Jumlah Courses: ${(data['courses'] as List).length}');
-    });
+    // Inisialisasi Future dipanggil satu kali saja di initState
+    studentFuture = loadStudentData();
   }
-
-  final List<Map<String, dynamic>> topics = [
-    {
-      'title': 'Git & GitHub',
-      'subtitle': 'Version control',
-      'done': true,
-    },
-    {
-      'title': 'Dart Fundamentals',
-      'subtitle': 'Language basics',
-      'done': true,
-    },
-    {
-      'title': 'Flutter UI Fundamentals',
-      'subtitle': 'Widgets & layout',
-      'done': false,
-    },
-    {
-      'title': '$studentId - $studentName',
-      'subtitle': 'Prodi Pendidikan Teknik Informatika',
-      'done': true,
-    },
-  ];
 
   @override
   Widget build(BuildContext context) {
-    final int completed = topics.where((item) => item['done'] == true).length;
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Flutter UI Fundamentals'),
+        title: const Text('Learning Dashboard'),
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
-      body: Column(
-        children: [
-          // Header Profil & Statistik
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                // Card Profil
-                Card(
-                  elevation: 3,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      children: [
-                        const CircleAvatar(
-                          radius: 36,
-                          backgroundImage:
-                              AssetImage('assets/images/profile.jpg'),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          studentName,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          studentId,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: Colors.grey,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.school, size: 16, color: Colors.blue),
-                            SizedBox(width: 6),
-                            Text(
-                              'Prodi Pendidikan Teknik Informatika',
-                              style: TextStyle(fontSize: 12),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                // Reusable Stat Cards
-                Row(
-                  children: [
-                    _buildStatCard('8', 'Widget', Icons.widgets),
-                    const SizedBox(width: 8),
-                    _buildStatCard('4', 'Layout', Icons.view_quilt),
-                    const SizedBox(width: 8),
-                    _buildStatCard('1', 'State', Icons.sync),
-                  ],
-                ),
-              ],
-            ),
-          ),
+      body: FutureBuilder<Map<String, dynamic>>(
+        future: studentFuture,
+        builder: (context, snapshot) {
+          // 1. Tampilan saat data masih dimuat (Loading)
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-          const Divider(height: 1),
-
-          // Teks Ringkasan Data
-          Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Daftar Topik Pembelajaran',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                    color: Colors.blue,
-                  ),
-                ),
-                Text(
-                  '$completed dari ${topics.length} topik selesai',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.grey,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // ListView.separated
-          Expanded(
-            child: ListView.separated(
-              padding: const EdgeInsets.symmetric(horizontal: 12.0),
-              itemCount: topics.length,
-              separatorBuilder: (context, index) => const SizedBox(height: 4),
-              itemBuilder: (context, index) {
-                final item = topics[index];
-
-                return Card(
-                  margin:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  child: ListTile(
-                    leading: Icon(
-                      item['done'] == true
-                          ? Icons.check_circle
-                          : Icons.schedule,
-                      color:
-                          item['done'] == true ? Colors.green : Colors.orange,
-                    ),
-                    title: Text(item['title'] as String),
-                    subtitle: Text(item['subtitle'] as String),
-                    trailing: Text(
-                      item['done'] == true ? 'Selesai' : 'Belum',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color:
-                            item['done'] == true ? Colors.green : Colors.orange,
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Reusable Stat Card
-  Widget _buildStatCard(String value, String label, IconData icon) {
-    return Expanded(
-      child: Card(
-        elevation: 2,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 8.0),
-          child: Column(
-            children: [
-              Icon(icon, color: Colors.blue, size: 20),
-              const SizedBox(height: 4),
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+          // 2. Tampilan saat ada error
+          if (snapshot.hasError) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  'Gagal memuat data: ${snapshot.error}',
+                  style: const TextStyle(color: Colors.red),
                 ),
               ),
-              Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 11,
-                  color: Colors.grey,
+            );
+          }
+
+          // 3. Tampilan saat data berhasil diambil
+          final data = snapshot.data!;
+          final student = data['student'] as Map<String, dynamic>;
+          final courses = data['courses'] as List<dynamic>;
+
+          return Column(
+            children: [
+              // Info Mahasiswa
+              Container(
+                width: double.infinity,
+                color: Theme.of(context).colorScheme.primaryContainer,
+                child: ListTile(
+                  leading: const CircleAvatar(
+                    child: Icon(Icons.person),
+                  ),
+                  title: Text(
+                    student['name'] as String,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text('NIM: ${student['nim']}'),
+                ),
+              ),
+              const Divider(height: 1),
+              // Daftar Courses
+              Expanded(
+                child: ListView.builder(
+                  itemCount: courses.length,
+                  itemBuilder: (context, index) {
+                    final course = courses[index] as Map<String, dynamic>;
+                    return Card(
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          child: Text('${index + 1}'),
+                        ),
+                        title: Text(
+                          course['title'] as String,
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        subtitle: Text('Kode: ${course['code']}'),
+                        trailing: const Icon(Icons.book_outlined),
+                      ),
+                    );
+                  },
                 ),
               ),
             ],
-          ),
-        ),
+          );
+        },
       ),
     );
   }
