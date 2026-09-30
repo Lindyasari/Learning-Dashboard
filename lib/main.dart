@@ -14,18 +14,58 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Flutter UI Fundamentals'),
-        ),
-        body: SingleChildScrollView(
-          child: Padding(
+      home: const TopicListDashboard(),
+    );
+  }
+}
+
+class TopicListDashboard extends StatefulWidget {
+  const TopicListDashboard({super.key});
+
+  @override
+  State<TopicListDashboard> createState() => _TopicListDashboardState();
+}
+
+class _TopicListDashboardState extends State<TopicListDashboard> {
+  final List<Map<String, dynamic>> topics = [
+    {
+      'title': 'Git & GitHub',
+      'subtitle': 'Version control',
+      'done': true,
+    },
+    {
+      'title': 'Dart Fundamentals',
+      'subtitle': 'Language basics',
+      'done': true,
+    },
+    {
+      'title': 'Flutter UI Fundamentals',
+      'subtitle': 'Widgets & layout',
+      'done': false,
+    },
+    {
+      'title': '$studentId - $studentName',
+      'subtitle': 'Prodi Pendidikan Teknik Informatika',
+      'done': true,
+    },
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Flutter UI Fundamentals'),
+      ),
+      body: Column(
+        children: [
+          // Header Profil & Statistik
+          Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               children: [
-                // Card Profil Mahasiswa
+                // Card Profil
                 Card(
-                  elevation: 4,
+                  elevation: 3,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
@@ -34,34 +74,34 @@ class MyApp extends StatelessWidget {
                     child: Column(
                       children: [
                         const CircleAvatar(
-                          radius: 44,
-                          backgroundImage: AssetImage('assets/images/profile.jpg'),
+                          radius: 36,
+                          backgroundImage:
+                              AssetImage('assets/images/profile.jpg'),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 8),
                         Text(
                           studentName,
                           style: const TextStyle(
-                            fontSize: 18,
+                            fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(height: 4),
                         Text(
                           studentId,
                           style: const TextStyle(
-                            fontSize: 14,
+                            fontSize: 13,
                             color: Colors.grey,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 6),
                         const Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.school, size: 18, color: Colors.blue),
+                            Icon(Icons.school, size: 16, color: Colors.blue),
                             SizedBox(width: 6),
                             Text(
                               'Prodi Pendidikan Teknik Informatika',
-                              style: TextStyle(fontSize: 13),
+                              style: TextStyle(fontSize: 12),
                             ),
                           ],
                         ),
@@ -69,10 +109,8 @@ class MyApp extends StatelessWidget {
                     ),
                   ),
                 ),
-
-                const SizedBox(height: 16),
-
-                // Bagian Kartu Statistik menggunakan Reusable Widget
+                const SizedBox(height: 12),
+                // Reusable Stat Cards
                 Row(
                   children: [
                     _buildStatCard('8', 'Widget', Icons.widgets),
@@ -82,20 +120,74 @@ class MyApp extends StatelessWidget {
                     _buildStatCard('1', 'State', Icons.sync),
                   ],
                 ),
-
-                const SizedBox(height: 16),
-
-                // GreetingCard (StatefulWidget) untuk Tahap 9
-                const GreetingCard(),
               ],
             ),
           ),
-        ),
+
+          const Divider(height: 1),
+
+          // Judul Seksi Daftar Topik
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Daftar Topik Pembelajaran',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  color: Colors.blue,
+                ),
+              ),
+            ),
+          ),
+
+          // ListView.builder dibungkus Expanded
+          Expanded(
+            child: ListView.builder(
+              itemCount: topics.length,
+              padding: const EdgeInsets.symmetric(horizontal: 12.0),
+              itemBuilder: (context, index) {
+                final item = topics[index];
+                final bool isDone = item['done'] == true;
+
+                return Card(
+                  elevation: 1,
+                  margin: const EdgeInsets.symmetric(vertical: 4.0),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: ListTile(
+                    leading: Icon(
+                      isDone ? Icons.check_circle : Icons.circle_outlined,
+                      color: isDone ? Colors.green : Colors.grey,
+                    ),
+                    title: Text(
+                      item['title'] as String,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        decoration:
+                            isDone ? TextDecoration.lineThrough : null,
+                        color: isDone ? Colors.black87 : Colors.black,
+                      ),
+                    ),
+                    subtitle: Text(item['subtitle'] as String),
+                    trailing: Icon(
+                      isDone ? Icons.done : Icons.pending,
+                      size: 18,
+                      color: isDone ? Colors.green : Colors.orange,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  // Reusable Function Widget
+  // Reusable Stat Card
   Widget _buildStatCard(String value, String label, IconData icon) {
     return Expanded(
       child: Card(
@@ -104,105 +196,27 @@ class MyApp extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
         ),
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 8.0),
+          padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 8.0),
           child: Column(
             children: [
-              Icon(icon, color: Colors.blue, size: 24),
-              const SizedBox(height: 6),
+              Icon(icon, color: Colors.blue, size: 20),
+              const SizedBox(height: 4),
               Text(
                 value,
                 style: const TextStyle(
-                  fontSize: 18,
+                  fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 2),
               Text(
                 label,
                 style: const TextStyle(
-                  fontSize: 12,
+                  fontSize: 11,
                   color: Colors.grey,
                 ),
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-// Komponen GreetingCard (StatefulWidget)
-class GreetingCard extends StatefulWidget {
-  const GreetingCard({super.key});
-
-  @override
-  State<GreetingCard> createState() => _GreetingCardState();
-}
-
-class _GreetingCardState extends State<GreetingCard> {
-  final TextEditingController controller = TextEditingController();
-  String message = 'Belum ada pesan';
-
-  @override
-  void dispose() {
-    controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Text(
-              '$studentId - $studentName',
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: controller,
-              decoration: const InputDecoration(
-                labelText: 'Ketik pesan Anda',
-                border: OutlineInputBorder(),
-                isDense: true,
-              ),
-            ),
-            const SizedBox(height: 12),
-            ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  message = controller.text.trim().isEmpty
-                      ? 'Input masih kosong'
-                      : controller.text.trim();
-                });
-              },
-              child: const Text('Tampilkan Pesan'),
-            ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                message,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 14),
-              ),
-            ),
-          ],
         ),
       ),
     );
