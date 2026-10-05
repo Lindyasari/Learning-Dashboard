@@ -16,9 +16,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Course Explorer - Tahap 1',
+      title: 'Course Explorer - Tahap 2',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
       home: const DashboardPage(),
@@ -51,9 +51,14 @@ class _DashboardPageState extends State<DashboardPage> {
 
   @override
   Widget build(BuildContext context) {
+    // === TAHAP 2: MEMBACA MEDIAQUERY ===
+    final size = MediaQuery.of(context).size;
+    final orientation = MediaQuery.of(context).orientation;
+    final String screenType = size.width < 600 ? 'Compact' : 'Wide';
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tahap 1 - $studentName', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        title: const Text('Tahap 2 - $studentName', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
         centerTitle: true,
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
@@ -82,22 +87,46 @@ class _DashboardPageState extends State<DashboardPage> {
                   const SizedBox(height: 12),
 
                   // ==========================================
-                  // TAHAP 1: KODE BENAR (RESPONSIF / EXPANDED)
+                  // TAHAP 2: UI MEDIAQUERY INFO
                   // ==========================================
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          // width: 500-nya sudah dihapus karena diganti Expanded
-                          color: Colors.green,
-                          padding: const EdgeInsets.all(16),
-                          child: const Text(
-                            '$studentId - $studentName',
-                            style: TextStyle(color: Colors.white, fontSize: 18),
-                          ),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade50,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.blue.shade300, width: 2),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          '$studentId - $studentName',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.blue),
                         ),
-                      ),
-                    ],
+                        const Divider(),
+                        Text('Width: ${size.width.toStringAsFixed(0)}', style: const TextStyle(fontSize: 15)),
+                        Text('Height: ${size.height.toStringAsFixed(0)}', style: const TextStyle(fontSize: 15)),
+                        Text('Orientation: ${orientation.name}', style: const TextStyle(fontSize: 15)),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const Text('Layout: ', style: TextStyle(fontSize: 15)),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: screenType == 'Compact' ? Colors.orange : Colors.green,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                screenType,
+                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                   // ==========================================
 
