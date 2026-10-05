@@ -82,17 +82,19 @@ class _DashboardPageState extends State<DashboardPage> {
                   const SizedBox(height: 12),
 
                   // ==========================================
-                  // TAHAP 1: KODE ERROR (HARD-CODED WIDTH 500)
+                  // TAHAP 1: KODE BENAR (RESPONSIF / EXPANDED)
                   // ==========================================
                   Row(
                     children: [
-                      Container(
-                        width: 500, // INI YANG BIKIN ERROR
-                        color: Colors.redAccent,
-                        padding: const EdgeInsets.all(16),
-                        child: const Text(
-                          '$studentId - $studentName',
-                          style: TextStyle(color: Colors.white, fontSize: 18),
+                      Expanded(
+                        child: Container(
+                          // width: 500-nya sudah dihapus karena diganti Expanded
+                          color: Colors.green,
+                          padding: const EdgeInsets.all(16),
+                          child: const Text(
+                            '$studentId - $studentName',
+                            style: TextStyle(color: Colors.white, fontSize: 18),
+                          ),
                         ),
                       ),
                     ],
@@ -129,7 +131,7 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 }
 
-// -- REUSABLE WIDGETS DI BAWAH INI (Sama seperti sebelumnya) --
+// -- REUSABLE WIDGETS DI BAWAH INI --
 class ProfileCard extends StatelessWidget {
   final String name;
   final String nim;
