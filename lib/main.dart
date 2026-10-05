@@ -18,7 +18,8 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Course Explorer - Tahap 3',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
+        // KEMBALI KONSISTEN MENGGUNAKAN TEMA ASLI (DEEP PURPLE)
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
       home: const DashboardPage(),
@@ -65,56 +66,26 @@ class _DashboardPageState extends State<DashboardPage> {
         child: FutureBuilder<Map<String, dynamic>>(
           future: studentFuture,
           builder: (context, snapshot) {
-            // 1. Loading State
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CircularProgressIndicator(),
-                    SizedBox(height: 12),
-                    Text('Memuat Learning Dashboard...'),
-                  ],
-                ),
-              );
+              return const Center(child: CircularProgressIndicator());
             }
-
-            // 2. Error State
             if (snapshot.hasError) {
               return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text(
-                    'Gagal memuat data: ${snapshot.error}',
-                    style: const TextStyle(color: Colors.red),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
+                child: Text('Gagal memuat data: ${snapshot.error}', style: const TextStyle(color: Colors.red)),
               );
             }
 
-            // 3. Data Loaded State
             final data = snapshot.data!;
             final student = data['student'] as Map<String, dynamic>;
             final courses = data['courses'] as List<dynamic>;
-
-            // Menghitung Total SKS dari JSON
-            final int totalCredits = courses.fold<int>(
-              0,
-              (sum, item) => sum + (item['credits'] as int? ?? 0),
-            );
+            final int totalCredits = courses.fold<int>(0, (sum, item) => sum + (item['credits'] as int? ?? 0));
 
             return Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Profile Card
-                  ProfileCard(
-                    name: student['name'] as String,
-                    nim: student['nim'] as String,
-                    avatarPath: student['avatar'] as String?,
-                  ),
+                  ProfileCard(name: student['name'] as String, nim: student['nim'] as String, avatarPath: student['avatar'] as String?),
                   const SizedBox(height: 12),
 
                   // ==========================================
@@ -124,7 +95,6 @@ class _DashboardPageState extends State<DashboardPage> {
                     width: double.infinity,
                     child: LayoutBuilder(
                       builder: (context, constraints) {
-                        // Logika Breakpoint
                         if (constraints.maxWidth < 600) {
                           return const CompactLayout();
                         } else if (constraints.maxWidth < 840) {
@@ -138,53 +108,22 @@ class _DashboardPageState extends State<DashboardPage> {
                   // ==========================================
 
                   const SizedBox(height: 12),
-
-                  // Summary Cards Row
                   Row(
                     children: [
-                      Expanded(
-                        child: SummaryCard(
-                          title: 'Total Topik',
-                          value: '${courses.length} Course',
-                          icon: Icons.book_outlined,
-                          color: Colors.teal.shade100,
-                        ),
-                      ),
+                      Expanded(child: SummaryCard(title: 'Total Topik', value: '${courses.length} Course', icon: Icons.book_outlined, color: Colors.deepPurple.shade100)),
                       const SizedBox(width: 12),
-                      Expanded(
-                        child: SummaryCard(
-                          title: 'Total SKS',
-                          value: '$totalCredits SKS',
-                          icon: Icons.school_outlined,
-                          color: Colors.teal.shade200,
-                        ),
-                      ),
+                      Expanded(child: SummaryCard(title: 'Total SKS', value: '$totalCredits SKS', icon: Icons.school_outlined, color: Colors.purple.shade100)),
                     ],
                   ),
                   const SizedBox(height: 14),
-
-                  const Text(
-                    'Daftar Mata Kuliah',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  const Text('Daftar Mata Kuliah', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
-
-                  // List Mata Kuliah
                   Expanded(
                     child: ListView.builder(
                       itemCount: courses.length,
                       itemBuilder: (context, index) {
                         final course = courses[index] as Map<String, dynamic>;
-                        return CourseItemCard(
-                          index: index + 1,
-                          title: course['title'] as String,
-                          code: course['code'] as String,
-                          credits: course['credits'] as int,
-                          status: course['status'] as String,
-                        );
+                        return CourseItemCard(index: index + 1, title: course['title'] as String, code: course['code'] as String, credits: course['credits'] as int, status: course['status'] as String);
                       },
                     ),
                   ),
@@ -204,33 +143,19 @@ class _DashboardPageState extends State<DashboardPage> {
 
 class CompactLayout extends StatelessWidget {
   const CompactLayout({super.key});
-
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.orange.shade100,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.orange),
-      ),
+      decoration: BoxDecoration(color: Colors.orange.shade100, borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.orange)),
       child: const Column(
         children: [
           Icon(Icons.phone_android, size: 40, color: Colors.orange),
           SizedBox(height: 8),
-          Text(
-            'COMPACT LAYOUT (< 600)',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-          ),
-          Text(
-            '$studentId - $studentName',
-            textAlign: TextAlign.center,
-          ),
+          Text('COMPACT LAYOUT (< 600)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          Text('$studentId - $studentName', textAlign: TextAlign.center),
           SizedBox(height: 8),
-          Text(
-            'Tampilan 1 Kolom Vertikal',
-            style: TextStyle(fontStyle: FontStyle.italic),
-          ),
+          Text('Tampilan 1 Kolom Vertikal', style: TextStyle(fontStyle: FontStyle.italic)),
         ],
       ),
     );
@@ -239,16 +164,11 @@ class CompactLayout extends StatelessWidget {
 
 class MediumLayout extends StatelessWidget {
   const MediumLayout({super.key});
-
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.green.shade100,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.green),
-      ),
+      decoration: BoxDecoration(color: Colors.green.shade100, borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.green)),
       child: const Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
@@ -257,18 +177,9 @@ class MediumLayout extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text(
-                  'MEDIUM LAYOUT (600 - 839)',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-                Text(
-                  '$studentId - $studentName',
-                  textAlign: TextAlign.center,
-                ),
-                Text(
-                  'Tampilan Row Sejajar',
-                  style: TextStyle(fontStyle: FontStyle.italic),
-                ),
+                Text('MEDIUM LAYOUT (600 - 839)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                Text('$studentId - $studentName', textAlign: TextAlign.center),
+                Text('Tampilan Row Sejajar', style: TextStyle(fontStyle: FontStyle.italic)),
               ],
             ),
           ),
@@ -280,26 +191,18 @@ class MediumLayout extends StatelessWidget {
 
 class ExpandedLayout extends StatelessWidget {
   const ExpandedLayout({super.key});
-
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.blue.shade100,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.blue),
-      ),
+      decoration: BoxDecoration(color: Colors.blue.shade100, borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.blue)),
       child: const Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           Icon(Icons.desktop_windows, size: 50, color: Colors.blue),
           Column(
             children: [
-              Text(
-                'EXPANDED LAYOUT (>= 840)',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-              ),
+              Text('EXPANDED LAYOUT (>= 840)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
               Text('$studentId - $studentName'),
             ],
           ),
@@ -313,212 +216,27 @@ class ExpandedLayout extends StatelessWidget {
 // -----------------------------------------------------------------------------
 // REUSABLE WIDGETS
 // -----------------------------------------------------------------------------
-
 class ProfileCard extends StatelessWidget {
-  final String name;
-  final String nim;
-  final String? avatarPath;
-
-  const ProfileCard({
-    super.key,
-    required this.name,
-    required this.nim,
-    this.avatarPath,
-  });
-
+  final String name; final String nim; final String? avatarPath;
+  const ProfileCard({super.key, required this.name, required this.nim, this.avatarPath});
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      color: Theme.of(context).colorScheme.primaryContainer,
-      child: Padding(
-        padding: const EdgeInsets.all(14.0),
-        child: Row(
-          children: [
-            CircleAvatar(
-              radius: 28,
-              backgroundColor: Theme.of(context).colorScheme.primary,
-              backgroundImage:
-                  avatarPath != null ? AssetImage(avatarPath!) : null,
-              child: avatarPath == null
-                  ? const Icon(Icons.person, size: 32, color: Colors.white)
-                  : null,
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    name,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    'NIM: $nim',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey.shade800,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+    return Card(elevation: 2, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)), color: Theme.of(context).colorScheme.primaryContainer, child: Padding(padding: const EdgeInsets.all(14.0), child: Row(children: [CircleAvatar(radius: 28, backgroundColor: Theme.of(context).colorScheme.primary, backgroundImage: avatarPath != null ? AssetImage(avatarPath!) : null, child: avatarPath == null ? const Icon(Icons.person, size: 32, color: Colors.white) : null), const SizedBox(width: 14), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)), const SizedBox(height: 2), Text('NIM: $nim', style: TextStyle(fontSize: 13, color: Colors.grey.shade800))]))])));
   }
 }
-
 class SummaryCard extends StatelessWidget {
-  final String title;
-  final String value;
-  final IconData icon;
-  final Color color;
-
-  const SummaryCard({
-    super.key,
-    required this.title,
-    required this.value,
-    required this.icon,
-    required this.color,
-  });
-
+  final String title; final String value; final IconData icon; final Color color;
+  const SummaryCard({super.key, required this.title, required this.value, required this.icon, required this.color});
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: 28, color: Colors.teal.shade900),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(fontSize: 11, color: Colors.black87),
-                ),
-                Text(
-                  value,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
+    return Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(12)), child: Row(children: [Icon(icon, size: 28, color: Colors.deepPurple.shade900), const SizedBox(width: 8), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(title, style: const TextStyle(fontSize: 11, color: Colors.black87)), Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold))]))]));
   }
 }
-
 class CourseItemCard extends StatelessWidget {
-  final int index;
-  final String title;
-  final String code;
-  final int credits;
-  final String status;
-
-  const CourseItemCard({
-    super.key,
-    required this.index,
-    required this.title,
-    required this.code,
-    required this.credits,
-    required this.status,
-  });
-
-  Color _getStatusColor() {
-    switch (status) {
-      case 'Selesai':
-        return Colors.green.shade100;
-      case 'Sedang Berjalan':
-        return Colors.orange.shade100;
-      default:
-        return Colors.grey.shade200;
-    }
-  }
-
-  Color _getStatusTextColor() {
-    switch (status) {
-      case 'Selesai':
-        return Colors.green.shade900;
-      case 'Sedang Berjalan':
-        return Colors.orange.shade900;
-      default:
-        return Colors.grey.shade800;
-    }
-  }
-
-  IconData _getStatusIcon() {
-    switch (status) {
-      case 'Selesai':
-        return Icons.check_circle_outline;
-      case 'Sedang Berjalan':
-        return Icons.timelapse;
-      default:
-        return Icons.hourglass_empty;
-    }
-  }
-
+  final int index; final String title; final String code; final int credits; final String status;
+  const CourseItemCard({super.key, required this.index, required this.title, required this.code, required this.credits, required this.status});
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 5),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-        leading: CircleAvatar(
-          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-          child: Text(
-            '$index',
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-        ),
-        title: Text(
-          title,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-        ),
-        subtitle: Padding(
-          padding: const EdgeInsets.only(top: 4.0),
-          child: Text('Kode: $code  •  $credits SKS'),
-        ),
-        trailing: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-          decoration: BoxDecoration(
-            color: _getStatusColor(),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(_getStatusIcon(), size: 13, color: _getStatusTextColor()),
-              const SizedBox(width: 4),
-              Text(
-                status,
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  color: _getStatusTextColor(),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+    return Card(margin: const EdgeInsets.symmetric(vertical: 5), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), child: ListTile(contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4), leading: CircleAvatar(backgroundColor: Theme.of(context).colorScheme.primaryContainer, child: Text('$index', style: const TextStyle(fontWeight: FontWeight.bold))), title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)), subtitle: Padding(padding: const EdgeInsets.only(top: 4.0), child: Text('Kode: $code  •  $credits SKS')), trailing: Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5), decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(16)), child: Text(status, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey.shade800)))));
   }
 }
