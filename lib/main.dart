@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Course Explorer - Tahap 13',
+      title: 'Course Explorer - Tahap 14',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
@@ -34,7 +34,7 @@ Future<Map<String, dynamic>> loadStudentData() async {
 }
 
 // ==========================================
-// TAHAP 13: WIDGET FORM FEEDBACK (DENGAN VALIDASI)
+// TAHAP 14: SNACKBAR, DIALOG, DAN LOADING
 // ==========================================
 class FeedbackFormScreen extends StatefulWidget {
   const FeedbackFormScreen({super.key});
@@ -44,16 +44,78 @@ class FeedbackFormScreen extends StatefulWidget {
 }
 
 class _FeedbackFormScreenState extends State<FeedbackFormScreen> {
-  // 1. Membuat GlobalKey untuk mengontrol state dari Form
   final _formKey = GlobalKey<FormState>();
-  
-  // Controller untuk mengambil teks komentar
   final TextEditingController _komentarController = TextEditingController();
+  
+  // State untuk melacak status loading
+  bool _isLoading = false;
 
   @override
   void dispose() {
     _komentarController.dispose();
     super.dispose();
+  }
+
+  // Fungsi untuk memunculkan dialog konfirmasi dan memproses data
+  void _submitFeedback() {
+    if (_formKey.currentState!.validate()) {
+      FocusScope.of(context).unfocus(); // Tutup keyboard
+      
+      // 1. Tampilkan AlertDialog untuk konfirmasi
+      showDialog(
+        context: context,
+        builder: (BuildContext dialogContext) {
+          return AlertDialog(
+            title: const Text('Konfirmasi Pengiriman'),
+            content: const Text('Apakah Anda yakin ingin mengirim feedback ini?'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(dialogContext); // Tutup dialog (Batal)
+                },
+                child: const Text('Batal'),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.deepPurple,
+                  foregroundColor: Colors.white,
+                ),
+                onPressed: () async {
+                  Navigator.pop(dialogContext); // Tutup dialog
+                  
+                  // Mulai proses loading
+                  setState(() {
+                    _isLoading = true;
+                  });
+
+                  // 2. Simulasi proses loading ke server selama 2 detik
+                  await Future.delayed(const Duration(seconds: 2));
+
+                  if (mounted) {
+                    // Hentikan loading
+                    setState(() {
+                      _isLoading = false;
+                      _komentarController.clear(); // Kosongkan form komentar
+                    });
+
+                    // 3. Tampilkan SnackBar sukses
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Data berhasil disimpan. Terima kasih, $studentName!'),
+                        backgroundColor: Colors.green.shade700,
+                        behavior: SnackBarBehavior.floating,
+                        duration: const Duration(seconds: 3),
+                      ),
+                    );
+                  }
+                },
+                child: const Text('Ya, Kirim'),
+              ),
+            ],
+          );
+        },
+      );
+    }
   }
 
   @override
@@ -65,7 +127,6 @@ class _FeedbackFormScreenState extends State<FeedbackFormScreen> {
         elevation: 2,
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          // 2. Membungkus input dengan Form dan memasang Key
           child: Form(
             key: _formKey,
             child: Column(
@@ -81,62 +142,32 @@ class _FeedbackFormScreenState extends State<FeedbackFormScreen> {
                 const Divider(),
                 const SizedBox(height: 16),
                 
-                // Input Nama (Sudah terisi default)
                 TextFormField(
                   initialValue: studentName,
-                  decoration: const InputDecoration(
-                    labelText: 'Nama Lengkap', 
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.person),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Nama wajib diisi';
-                    }
-                    return null;
-                  },
+                  decoration: const InputDecoration(labelText: 'Nama Lengkap', border: OutlineInputBorder(), prefixIcon: Icon(Icons.person)),
+                  validator: (value) => (value == null || value.trim().isEmpty) ? 'Nama wajib diisi' : null,
                 ),
                 const SizedBox(height: 16),
                 
-                // Input NIM (Sudah terisi default)
                 TextFormField(
                   initialValue: studentId,
-                  decoration: const InputDecoration(
-                    labelText: 'NIM', 
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.badge),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'NIM wajib diisi';
-                    }
-                    return null;
-                  },
+                  decoration: const InputDecoration(labelText: 'NIM', border: OutlineInputBorder(), prefixIcon: Icon(Icons.badge)),
+                  validator: (value) => (value == null || value.trim().isEmpty) ? 'NIM wajib diisi' : null,
                 ),
                 const SizedBox(height: 16),
                 
-                // Input Komentar (Minimal 5 Karakter)
                 TextFormField(
                   controller: _komentarController,
                   maxLines: 3,
-                  decoration: const InputDecoration(
-                    labelText: 'Komentar Praktikum', 
-                    border: OutlineInputBorder(),
-                    alignLabelWithHint: true,
-                  ),
+                  decoration: const InputDecoration(labelText: 'Komentar Praktikum', border: OutlineInputBorder(), alignLabelWithHint: true),
                   validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Komentar wajib diisi';
-                    } else if (value.length < 5) {
-                      // 3. Validasi minimal 5 karakter
-                      return 'Komentar minimal 5 karakter';
-                    }
+                    if (value == null || value.trim().isEmpty) return 'Komentar wajib diisi';
+                    if (value.length < 5) return 'Komentar minimal 5 karakter';
                     return null;
                   },
                 ),
                 const SizedBox(height: 24),
                 
-                // Tombol Submit
                 SizedBox(
                   width: double.infinity,
                   height: 50,
@@ -145,22 +176,16 @@ class _FeedbackFormScreenState extends State<FeedbackFormScreen> {
                       backgroundColor: Theme.of(context).colorScheme.primary,
                       foregroundColor: Colors.white,
                     ),
-                    onPressed: () {
-                      // 4. Memvalidasi form sebelum menampilkan hasil
-                      if (_formKey.currentState!.validate()) {
-                        // Menutup keyboard
-                        FocusScope.of(context).unfocus();
-                        
-                        // Menampilkan hasil jika validasi lolos
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Terima kasih $studentName! Feedback terkirim.'),
-                            backgroundColor: Colors.green,
-                          ),
-                        );
-                      }
-                    },
-                    child: const Text('Kirim Feedback', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    // Nonaktifkan tombol saat sedang loading
+                    onPressed: _isLoading ? null : _submitFeedback,
+                    // Tampilkan indikator loading atau teks biasa
+                    child: _isLoading 
+                        ? const SizedBox(
+                            width: 24, 
+                            height: 24, 
+                            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
+                          )
+                        : const Text('Kirim Feedback', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   ),
                 ),
               ],
@@ -173,7 +198,7 @@ class _FeedbackFormScreenState extends State<FeedbackFormScreen> {
 }
 
 // ==========================================
-// SHELL NAVIGASI (MENAMPUNG FORM DI TAB HOME)
+// SHELL NAVIGASI
 // ==========================================
 class MainNavigationPage extends StatefulWidget {
   const MainNavigationPage({super.key});
@@ -198,18 +223,14 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     return FutureBuilder<Map<String, dynamic>>(
       future: studentFuture,
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(body: Center(child: CircularProgressIndicator()));
-        }
-        if (snapshot.hasError) {
-          return Scaffold(body: Center(child: Text('Error: ${snapshot.error}')));
-        }
+        if (snapshot.connectionState == ConnectionState.waiting) return const Scaffold(body: Center(child: CircularProgressIndicator()));
+        if (snapshot.hasError) return Scaffold(body: Center(child: Text('Error: ${snapshot.error}')));
 
         final data = snapshot.data!;
         final courses = data['courses'] as List<dynamic>;
 
         final List<Widget> screens = [
-          const FeedbackFormScreen(), // Index 0: Diganti dengan Form Feedback
+          const FeedbackFormScreen(),
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
@@ -235,11 +256,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                             subtitle: Text('$courseCode • ${course['credits']} SKS'),
                             trailing: IconButton(
                               icon: Icon(isFavorite ? Icons.favorite : Icons.favorite_border, color: isFavorite ? Colors.red : Colors.grey),
-                              onPressed: () {
-                                setState(() {
-                                  isFavorite ? favoriteCourseCodes.remove(courseCode) : favoriteCourseCodes.add(courseCode);
-                                });
-                              },
+                              onPressed: () => setState(() => isFavorite ? favoriteCourseCodes.remove(courseCode) : favoriteCourseCodes.add(courseCode)),
                             ),
                           ),
                         ),
@@ -268,13 +285,13 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
           builder: (context, constraints) {
             if (constraints.maxWidth < 840) {
               return Scaffold(
-                appBar: AppBar(title: const Text('Tahap 13 - $studentName', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)), centerTitle: true, backgroundColor: Theme.of(context).colorScheme.inversePrimary),
+                appBar: AppBar(title: const Text('Tahap 14 - $studentName', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)), centerTitle: true, backgroundColor: Theme.of(context).colorScheme.inversePrimary),
                 body: screens[currentIndex],
                 bottomNavigationBar: NavigationBar(
                   selectedIndex: currentIndex,
                   onDestinationSelected: (index) => setState(() => currentIndex = index),
                   destinations: const [
-                    NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home), label: 'Home / Form'),
+                    NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home), label: 'Form'),
                     NavigationDestination(icon: Icon(Icons.school_outlined), selectedIcon: Icon(Icons.school), label: 'Courses'),
                     NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: 'Profile'),
                   ],
@@ -282,7 +299,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
               );
             }
             return Scaffold(
-              appBar: AppBar(title: const Text('Tahap 13 - $studentName', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)), centerTitle: true, backgroundColor: Theme.of(context).colorScheme.inversePrimary),
+              appBar: AppBar(title: const Text('Tahap 14 - $studentName', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)), centerTitle: true, backgroundColor: Theme.of(context).colorScheme.inversePrimary),
               body: Row(
                 children: [
                   NavigationRail(
