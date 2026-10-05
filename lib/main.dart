@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Course Explorer - Tahap 11',
+      title: 'Course Explorer - Tahap 12',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
@@ -34,7 +34,7 @@ Future<Map<String, dynamic>> loadStudentData() async {
 }
 
 // ==========================================
-// TAHAP 11: ADAPTIVE NAVIGATION (RAIL & BAR)
+// TAHAP 12: USER INTERACTION & FEEDBACK
 // ==========================================
 class MainNavigationPage extends StatefulWidget {
   const MainNavigationPage({super.key});
@@ -46,6 +46,9 @@ class MainNavigationPage extends StatefulWidget {
 class _MainNavigationPageState extends State<MainNavigationPage> {
   int currentIndex = 0;
   late Future<Map<String, dynamic>> studentFuture;
+  
+  // State untuk menyimpan daftar kode mata kuliah yang di-favorite-kan
+  Set<String> favoriteCourseCodes = {};
 
   @override
   void initState() {
@@ -68,8 +71,8 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
         final data = snapshot.data!;
         final courses = data['courses'] as List<dynamic>;
 
-        // Kumpulan halaman
         final List<Widget> screens = [
+          // INDEX 0: HOME
           Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -82,6 +85,8 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
               ],
             ),
           ),
+          
+          // INDEX 1: COURSES (DENGAN INTERAKSI INKWELL & FAVORITE)
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
@@ -94,14 +99,56 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                     itemCount: courses.length,
                     itemBuilder: (context, index) {
                       final course = courses[index];
+                      final courseCode = course['code'] as String;
+                      final isFavorite = favoriteCourseCodes.contains(courseCode);
+
                       return Card(
-                        child: ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: Colors.deepPurple.shade100,
-                            child: Text('${index + 1}'),
+                        margin: const EdgeInsets.only(bottom: 8),
+                        // clipBehavior penting agar efek ripple InkWell tidak meluber keluar border radius Card
+                        clipBehavior: Clip.antiAlias,
+                        child: InkWell(
+                          // Efek Tap biasa
+                          onTap: () {
+                            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Anda menekan mata kuliah: ${course['title']}')),
+                            );
+                          },
+                          // Efek Tekan Lama (Long Press)
+                          onLongPress: () {
+                            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Info Cepat: ${course['title']} berbobot ${course['credits']} SKS. Status: ${course['status']}'),
+                                backgroundColor: Colors.deepPurple.shade700,
+                              ),
+                            );
+                          },
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: Colors.deepPurple.shade100,
+                              child: Text('${index + 1}'),
+                            ),
+                            title: Text(course['title'], style: const TextStyle(fontWeight: FontWeight.bold)),
+                            subtitle: Text('$courseCode • ${course['credits']} SKS'),
+                            
+                            // Tombol Button eksplisit untuk Favorite
+                            trailing: IconButton(
+                              icon: Icon(
+                                isFavorite ? Icons.favorite : Icons.favorite_border,
+                                color: isFavorite ? Colors.red : Colors.grey,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  if (isFavorite) {
+                                    favoriteCourseCodes.remove(courseCode);
+                                  } else {
+                                    favoriteCourseCodes.add(courseCode);
+                                  }
+                                });
+                              },
+                            ),
                           ),
-                          title: Text(course['title'], style: const TextStyle(fontWeight: FontWeight.bold)),
-                          subtitle: Text('${course['code']} • ${course['credits']} SKS'),
                         ),
                       );
                     },
@@ -110,6 +157,8 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
               ],
             ),
           ),
+          
+          // INDEX 2: PROFILE
           Padding(
             padding: const EdgeInsets.all(24.0),
             child: Column(
@@ -128,17 +177,11 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
           ),
         ];
 
-        // MENGGUNAKAN LAYOUTBUILDER UNTUK RESPONSIVITAS
         return LayoutBuilder(
           builder: (context, constraints) {
-            // JIKA LAYAR SEMPIT (< 840), GUNAKAN BOTTOM NAVIGATION BAR
             if (constraints.maxWidth < 840) {
               return Scaffold(
-                appBar: AppBar(
-                  title: const Text('Tahap 11 - $studentName', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                  centerTitle: true,
-                  backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-                ),
+                appBar: AppBar(title: const Text('Tahap 12 - $studentName', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)), centerTitle: true, backgroundColor: Theme.of(context).colorScheme.inversePrimary),
                 body: screens[currentIndex],
                 bottomNavigationBar: NavigationBar(
                   selectedIndex: currentIndex,
@@ -151,14 +194,8 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                 ),
               );
             }
-
-            // JIKA LAYAR LEBAR (>= 840), GUNAKAN NAVIGATION RAIL (SAMPING)
             return Scaffold(
-              appBar: AppBar(
-                title: const Text('Tahap 11 - $studentName', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                centerTitle: true,
-                backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-              ),
+              appBar: AppBar(title: const Text('Tahap 12 - $studentName', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)), centerTitle: true, backgroundColor: Theme.of(context).colorScheme.inversePrimary),
               body: Row(
                 children: [
                   NavigationRail(
@@ -173,7 +210,6 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
                     ],
                   ),
                   const VerticalDivider(thickness: 1, width: 1),
-                  // Layar konten menggunakan Expanded agar mengisi sisa ruang
                   Expanded(child: screens[currentIndex]),
                 ],
               ),
