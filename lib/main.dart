@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Course Explorer - Tahap 8',
+      title: 'Course Explorer - Tahap 9',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
@@ -26,7 +26,6 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// Fungsi load JSON
 Future<Map<String, dynamic>> loadStudentData() async {
   await Future.delayed(const Duration(seconds: 1));
   final String jsonString =
@@ -35,7 +34,7 @@ Future<Map<String, dynamic>> loadStudentData() async {
 }
 
 // ==========================================
-// TAHAP 8: HALAMAN DAFTAR (LIST)
+// TAHAP 9: HALAMAN UTAMA (MENERIMA DATA)
 // ==========================================
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -57,7 +56,7 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tahap 8 - $studentName', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        title: const Text('Tahap 9 - $studentName', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
         centerTitle: true,
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
@@ -81,7 +80,6 @@ class _DashboardPageState extends State<DashboardPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Profil Singkat
                   Card(
                     color: Theme.of(context).colorScheme.primaryContainer,
                     child: ListTile(
@@ -94,7 +92,6 @@ class _DashboardPageState extends State<DashboardPage> {
                   const Text('Pilih Mata Kuliah:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
                   
-                  // Daftar Course yang bisa diklik
                   Expanded(
                     child: ListView.builder(
                       itemCount: courses.length,
@@ -110,19 +107,35 @@ class _DashboardPageState extends State<DashboardPage> {
                             ),
                             title: Text(course['title'], style: const TextStyle(fontWeight: FontWeight.bold)),
                             subtitle: Text('${course['code']} • ${course['credits']} SKS'),
-                            trailing: const Icon(Icons.chevron_right, color: Colors.deepPurple), // Ikon panah
+                            trailing: const Icon(Icons.chevron_right, color: Colors.deepPurple),
                             
-                            // Aksi saat list ditekan
-                            onTap: () {
-                              // Mengirim data Map 'course' ke DetailPage
-                              Navigator.push(
+                            // MENGGUNAKAN ASYNC UNTUK MENUNGGU DATA KEMBALIAN
+                            onTap: () async {
+                              // Navigasi dengan push yang di-await
+                              final result = await Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => CourseDetailPage(
-                                    course: course, // <-- MENGIRIM DATA
+                                    course: course,
                                   ),
                                 ),
                               );
+
+                              // Cek apakah layar detail mengirimkan true
+                              if (result == true) {
+                                // Memastikan halaman masih terbuka
+                                if (!context.mounted) return;
+                                
+                                // Menampilkan SnackBar
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Anda memfavoritkan mata kuliah ${course['title']}!'),
+                                    backgroundColor: Colors.green.shade700,
+                                    duration: const Duration(seconds: 2),
+                                    behavior: SnackBarBehavior.floating,
+                                  ),
+                                );
+                              }
                             },
                           ),
                         );
@@ -140,15 +153,14 @@ class _DashboardPageState extends State<DashboardPage> {
 }
 
 // ==========================================
-// TAHAP 8: HALAMAN DETAIL (MENERIMA DATA)
+// TAHAP 9: HALAMAN DETAIL (MENGIRIM DATA)
 // ==========================================
 class CourseDetailPage extends StatelessWidget {
-  // Constructor untuk menerima Map data
   final Map<String, dynamic> course;
 
   const CourseDetailPage({
     super.key,
-    required this.course, // Wajib diisi saat dipanggil
+    required this.course,
   });
 
   @override
@@ -163,7 +175,6 @@ class CourseDetailPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Menampilkan Nama dan NIM Mahasiswa di header detail
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(12),
@@ -176,7 +187,7 @@ class CourseDetailPage extends StatelessWidget {
                 children: [
                   const Text('Data Mahasiswa', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.deepPurple)),
                   const SizedBox(height: 4),
-                  Text(studentName, style: const TextStyle(fontSize: 16)),
+                  const Text(studentName, style: TextStyle(fontSize: 16)),
                   Text(studentId, style: TextStyle(color: Colors.grey.shade700)),
                 ],
               ),
@@ -187,7 +198,6 @@ class CourseDetailPage extends StatelessWidget {
             const Divider(),
             const SizedBox(height: 8),
             
-            // Menampilkan Data yang dikirim dari halaman sebelumnya
             ListTile(
               leading: const Icon(Icons.book, color: Colors.deepPurple),
               title: const Text('Judul / Nama', style: TextStyle(fontSize: 12, color: Colors.grey)),
@@ -198,25 +208,20 @@ class CourseDetailPage extends StatelessWidget {
               title: const Text('Kode', style: TextStyle(fontSize: 12, color: Colors.grey)),
               subtitle: Text(course['code'], style: const TextStyle(fontSize: 16, color: Colors.black)),
             ),
-            ListTile(
-              leading: const Icon(Icons.school, color: Colors.deepPurple),
-              title: const Text('Beban SKS', style: TextStyle(fontSize: 12, color: Colors.grey)),
-              subtitle: Text('${course['credits']} SKS', style: const TextStyle(fontSize: 16, color: Colors.black)),
-            ),
-            ListTile(
-              leading: const Icon(Icons.info_outline, color: Colors.deepPurple),
-              title: const Text('Status Pengambilan', style: TextStyle(fontSize: 12, color: Colors.grey)),
-              subtitle: Text(
-                course['status'], 
-                style: TextStyle(
-                  fontSize: 16, 
-                  fontWeight: FontWeight.bold, 
-                  color: course['status'] == 'Selesai' ? Colors.green : Colors.orange
-                )
-              ),
-            ),
           ],
         ),
+      ),
+      
+      // TOMBOL UNTUK MENGIRIM DATA KEMBALI
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          // Menutup halaman ini dan MENGEMBALIKAN NILAI 'true'
+          Navigator.pop(context, true);
+        },
+        icon: const Icon(Icons.favorite),
+        label: const Text('Pilih / Favorite'),
+        backgroundColor: Colors.pink,
+        foregroundColor: Colors.white,
       ),
     );
   }
