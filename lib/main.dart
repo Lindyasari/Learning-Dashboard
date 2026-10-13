@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-// --- KONSTANTA IDENTITAS MAHASISWA ---
 const String studentName = 'Ni Komang Tri Lindyasari';
 const String studentId = '2415051017';
 
