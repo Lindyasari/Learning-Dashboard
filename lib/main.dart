@@ -137,7 +137,7 @@ class _ResponsiveShellState extends State<ResponsiveShell> {
             );
           },
         );
-      },
+      }
     );
   }
 }
@@ -169,7 +169,11 @@ class HomePage extends StatelessWidget {
               const SizedBox(width: 16),
               Expanded(child: _buildInfoBox(context, 'Status', 'Aktif', Icons.check_circle_outline)),
             ],
-          )
+          ),
+          const SizedBox(height: 24),
+          
+          // --- INI ADALAH PENAMBAHAN UNTUK TAHAP 1 ---
+          const LocalStateCard(),
         ],
       ),
     );
@@ -456,12 +460,51 @@ class CourseCard extends StatelessWidget {
           child: ListTile(
             leading: CircleAvatar(backgroundColor: Colors.deepPurple.shade100, child: Text('$index')),
             title: Text(course['title'], maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: Text('${course['code']} • ${course['credits']} SKS'),
+            subtitle: Text('${course['code']} | ${course['credits']} SKS'),
             trailing: IconButton(
               icon: Icon(isFavorite ? Icons.favorite : Icons.favorite_border, color: isFavorite ? Colors.red : Colors.grey),
               onPressed: onFavoriteTap,
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+// ==========================================
+// TUGAS TAHAP 1: WIDGET LOCAL STATE
+// ==========================================
+class LocalStateCard extends StatefulWidget {
+  const LocalStateCard({super.key});
+
+  @override
+  State<LocalStateCard> createState() => _LocalStateCardState();
+}
+
+class _LocalStateCardState extends State<LocalStateCard> {
+  // Ini adalah contoh LOCAL STATE (Hanya untuk widget ini)
+  bool isFavorite = false; 
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 2,
+      child: ListTile(
+        leading: const Icon(Icons.book, color: Colors.deepPurple),
+        title: const Text('Materi Provider'),
+        subtitle: const Text('Belajar Local vs Shared State'),
+        trailing: IconButton(
+          icon: Icon(
+            isFavorite ? Icons.favorite : Icons.favorite_border,
+            color: isFavorite ? Colors.red : Colors.grey,
+          ),
+          onPressed: () {
+            // Memanggil setState() untuk Local State
+            setState(() {
+              isFavorite = !isFavorite;
+            });
+          },
         ),
       ),
     );
