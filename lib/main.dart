@@ -196,9 +196,6 @@ class HomePage extends StatelessWidget {
   }
 }
 
-// ==========================================
-// 3. HALAMAN COURSES (LIST/GRID OTOMATIS)
-// ==========================================
 class CoursesPage extends StatelessWidget {
   final List<dynamic> courses;
   final Set<String> favorites;
