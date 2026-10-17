@@ -11,7 +11,7 @@ class CourseService {
     
     await Future.delayed(const Duration(seconds: 1));
 
-    final jsonString = await rootBundle.loadString('assets/data/student_data.json');
+    final jsonString = await rootBundle.loadString('assets/data/student_data_salah.json');
     
     final data = jsonDecode(jsonString) as Map<String, dynamic>;
     
