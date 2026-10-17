@@ -2,7 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart'; 
-import 'course_provider.dart';           
+import 'course_provider.dart';
+import 'models/course.dart'; 
 
 const String studentName = 'Ni Komang Tri Lindyasari';
 const String studentId = '2415051017';
@@ -33,7 +34,6 @@ class CourseExplorerApp extends StatelessWidget {
   }
 }
 
-// Fungsi Load Data JSON
 Future<Map<String, dynamic>> loadStudentData() async {
   await Future.delayed(const Duration(seconds: 1)); 
   final String jsonString = await rootBundle.loadString('assets/data/student_data.json');
@@ -73,12 +73,15 @@ class _ResponsiveShellState extends State<ResponsiveShell> {
         }
 
         final data = snapshot.data!;
-        final courses = data['courses'] as List<dynamic>;
+        
+        // TAHAP 8: Konversi data JSON (List<dynamic>) menjadi List Object Model (List<Course>)
+        final rawCourses = data['courses'] as List<dynamic>;
+        final List<Course> courses = rawCourses.map((json) => Course.fromJson(json as Map<String, dynamic>)).toList();
 
         final List<Widget> pages = [
           HomePage(studentData: data['student'], coursesCount: courses.length),
-          CoursesPage(courses: courses), // Bersih tanpa prop drilling
-          const ProfilePage(), // Halaman profil sudah dikembalikan penuh
+          CoursesPage(courses: courses), // Mengirim List<Course> bukan JSON mentah
+          const ProfilePage(),
         ];
 
         return LayoutBuilder(
@@ -133,7 +136,7 @@ class _ResponsiveShellState extends State<ResponsiveShell> {
 }
 
 // ==========================================
-// 2. HALAMAN HOME
+// 2. HALAMAN HOME (TIDAK BERUBAH)
 // ==========================================
 class HomePage extends StatelessWidget {
   final dynamic studentData;
@@ -143,7 +146,6 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // TAHAP 7: Menggunakan watch() untuk merender ulang jumlah favorit
     final favoriteCount = context.watch<CourseProvider>().favorites.length;
 
     return SingleChildScrollView(
@@ -160,7 +162,6 @@ class HomePage extends StatelessWidget {
             children: [
               Expanded(child: _buildInfoBox(context, 'Total Topik', '$coursesCount Courses', Icons.library_books)),
               const SizedBox(width: 16),
-              // Watcher jumlah favorit
               Expanded(child: _buildInfoBox(context, 'Total Favorit', '$favoriteCount Disukai', Icons.favorite)),
             ],
           ),
@@ -195,7 +196,7 @@ class HomePage extends StatelessWidget {
 // 3. HALAMAN COURSES
 // ==========================================
 class CoursesPage extends StatelessWidget {
-  final List<dynamic> courses;
+  final List<Course> courses; // TAHAP 8: Sekarang menerima List<Course>
   const CoursesPage({super.key, required this.courses}); 
 
   @override
@@ -235,8 +236,7 @@ class CoursesPage extends StatelessWidget {
     );
   }
 
-  Widget _buildCourseItem(BuildContext context, dynamic courseData, int index) {
-    final course = courseData as Map<String, dynamic>;
+  Widget _buildCourseItem(BuildContext context, Course course, int index) {
     return CourseCard(
       index: index + 1,
       course: course,
@@ -248,24 +248,24 @@ class CoursesPage extends StatelessWidget {
 // 4. HALAMAN DETAIL
 // ==========================================
 class CourseDetailPage extends StatelessWidget {
-  final Map<String, dynamic> course;
+  final Course course; // TAHAP 8: Sekarang menggunakan tipe data Course
 
   const CourseDetailPage({super.key, required this.course});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(course['code']), backgroundColor: Theme.of(context).colorScheme.inversePrimary),
+      appBar: AppBar(title: Text(course.code), backgroundColor: Theme.of(context).colorScheme.inversePrimary),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(course['title'], style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.deepPurple)),
+            Text(course.title, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.deepPurple)),
             const SizedBox(height: 16),
             const Divider(),
-            ListTile(leading: const Icon(Icons.school), title: const Text('Beban Studi'), subtitle: Text('${course['credits']} SKS')),
-            ListTile(leading: const Icon(Icons.info), title: const Text('Status'), subtitle: Text(course['status'])),
+            ListTile(leading: const Icon(Icons.school), title: const Text('Beban Studi'), subtitle: Text('${course.credits} SKS')),
+            ListTile(leading: const Icon(Icons.info), title: const Text('Status'), subtitle: Text(course.status)),
             const Spacer(),
             SizedBox(
               width: double.infinity,
@@ -283,7 +283,7 @@ class CourseDetailPage extends StatelessWidget {
 }
 
 // ==========================================
-// 5. HALAMAN PROFILE (SUDAH DIPERBAIKI FULL)
+// 5. HALAMAN PROFILE (TIDAK BERUBAH)
 // ==========================================
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -410,7 +410,7 @@ class ProfileSummaryCard extends StatelessWidget {
 
 class CourseCard extends StatelessWidget {
   final int index;
-  final Map<String, dynamic> course;
+  final Course course; // TAHAP 8: Menerima objek Course
 
   const CourseCard({super.key, required this.index, required this.course});
 
@@ -426,17 +426,15 @@ class CourseCard extends StatelessWidget {
         child: Center(
           child: ListTile(
             leading: CircleAvatar(backgroundColor: Colors.deepPurple.shade100, child: Text('$index')),
-            title: Text(course['title'], maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: Text('${course['code']} | ${course['credits']} SKS'),
-            // TAHAP 7: Consumer untuk rebuild area kecil
+            title: Text(course.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: Text('${course.code} | ${course.credits} SKS'),
             trailing: Consumer<CourseProvider>(
               builder: (context, provider, child) {
-                final isFavorite = provider.favorites.contains(course['code']);
+                final isFavorite = provider.favorites.contains(course.code);
                 return IconButton(
                   icon: Icon(isFavorite ? Icons.favorite : Icons.favorite_border, color: isFavorite ? Colors.red : Colors.grey),
                   onPressed: () {
-                    // TAHAP 7: Gunakan read() untuk memanggil aksi
-                    context.read<CourseProvider>().toggleFavorite(course['code']);
+                    context.read<CourseProvider>().toggleFavorite(course.code);
                   },
                 );
               },
