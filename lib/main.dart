@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart'; 
-import 'course_provider.dart';          
+import 'course_provider.dart';           
 
 const String studentName = 'Ni Komang Tri Lindyasari';
 const String studentId = '2415051017';
@@ -41,7 +41,7 @@ Future<Map<String, dynamic>> loadStudentData() async {
 }
 
 // ==========================================
-// 1. RESPONSIVE SHELL (PENGENDALI NAVIGASI UTAMA)
+// 1. RESPONSIVE SHELL
 // ==========================================
 class ResponsiveShell extends StatefulWidget {
   const ResponsiveShell({super.key});
@@ -54,22 +54,10 @@ class _ResponsiveShellState extends State<ResponsiveShell> {
   int _currentIndex = 0;
   late Future<Map<String, dynamic>> _studentFuture;
   
-  final Set<String> _favoriteCourseCodes = {};
-
   @override
   void initState() {
     super.initState();
     _studentFuture = loadStudentData();
-  }
-
-  void _toggleFavorite(String code) {
-    setState(() {
-      if (_favoriteCourseCodes.contains(code)) {
-        _favoriteCourseCodes.remove(code);
-      } else {
-        _favoriteCourseCodes.add(code);
-      }
-    });
   }
 
   @override
@@ -89,8 +77,8 @@ class _ResponsiveShellState extends State<ResponsiveShell> {
 
         final List<Widget> pages = [
           HomePage(studentData: data['student'], coursesCount: courses.length),
-          CoursesPage(courses: courses, favorites: _favoriteCourseCodes, onToggleFavorite: _toggleFavorite),
-          const ProfilePage(),
+          CoursesPage(courses: courses), // Bersih tanpa prop drilling
+          const ProfilePage(), // Halaman profil sudah dikembalikan penuh
         ];
 
         return LayoutBuilder(
@@ -155,6 +143,9 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // TAHAP 7: Menggunakan watch() untuk merender ulang jumlah favorit
+    final favoriteCount = context.watch<CourseProvider>().favorites.length;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24.0),
       child: Column(
@@ -169,7 +160,8 @@ class HomePage extends StatelessWidget {
             children: [
               Expanded(child: _buildInfoBox(context, 'Total Topik', '$coursesCount Courses', Icons.library_books)),
               const SizedBox(width: 16),
-              Expanded(child: _buildInfoBox(context, 'Status', 'Aktif', Icons.check_circle_outline)),
+              // Watcher jumlah favorit
+              Expanded(child: _buildInfoBox(context, 'Total Favorit', '$favoriteCount Disukai', Icons.favorite)),
             ],
           ),
           const SizedBox(height: 24),
@@ -204,10 +196,7 @@ class HomePage extends StatelessWidget {
 // ==========================================
 class CoursesPage extends StatelessWidget {
   final List<dynamic> courses;
-  final Set<String> favorites;
-  final Function(String) onToggleFavorite;
-
-  const CoursesPage({super.key, required this.courses, required this.favorites, required this.onToggleFavorite});
+  const CoursesPage({super.key, required this.courses}); 
 
   @override
   Widget build(BuildContext context) {
@@ -248,13 +237,9 @@ class CoursesPage extends StatelessWidget {
 
   Widget _buildCourseItem(BuildContext context, dynamic courseData, int index) {
     final course = courseData as Map<String, dynamic>;
-    final isFav = favorites.contains(course['code']);
-
     return CourseCard(
       index: index + 1,
       course: course,
-      isFavorite: isFav,
-      onFavoriteTap: () => onToggleFavorite(course['code']),
     );
   }
 }
@@ -298,7 +283,7 @@ class CourseDetailPage extends StatelessWidget {
 }
 
 // ==========================================
-// 5. HALAMAN PROFILE
+// 5. HALAMAN PROFILE (SUDAH DIPERBAIKI FULL)
 // ==========================================
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -321,33 +306,18 @@ class _ProfilePageState extends State<ProfilePage> {
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
       FocusScope.of(context).unfocus();
-      showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: const Text('Konfirmasi'),
-          content: const Text('Kirim feedback ini ke server?'),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
-            ElevatedButton(
-              onPressed: () async {
-                Navigator.pop(ctx);
-                setState(() => _isLoading = true);
-                await Future.delayed(const Duration(seconds: 2)); 
-                if (mounted) {
-                  setState(() {
-                    _isLoading = false;
-                    _komentarController.clear();
-                  });
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Feedback berhasil dikirim!'), backgroundColor: Colors.green),
-                  );
-                }
-              },
-              child: const Text('Ya, Kirim'),
-            ),
-          ],
-        ),
-      );
+      setState(() => _isLoading = true);
+      Future.delayed(const Duration(seconds: 2), () {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+            _komentarController.clear();
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Feedback berhasil dikirim!'), backgroundColor: Colors.green),
+          );
+        }
+      });
     }
   }
 
@@ -378,11 +348,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       controller: _komentarController,
                       maxLines: 3,
                       decoration: const InputDecoration(labelText: 'Tulis Komentar (Min. 5 karakter)', border: OutlineInputBorder()),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) return 'Wajib diisi';
-                        if (value.length < 5) return 'Minimal 5 karakter';
-                        return null;
-                      },
+                      validator: (value) => (value == null || value.trim().isEmpty) ? 'Wajib diisi' : (value.length < 5 ? 'Minimal 5 karakter' : null),
                     ),
                     const SizedBox(height: 16),
                     SizedBox(
@@ -445,10 +411,8 @@ class ProfileSummaryCard extends StatelessWidget {
 class CourseCard extends StatelessWidget {
   final int index;
   final Map<String, dynamic> course;
-  final bool isFavorite;
-  final VoidCallback onFavoriteTap;
 
-  const CourseCard({super.key, required this.index, required this.course, required this.isFavorite, required this.onFavoriteTap});
+  const CourseCard({super.key, required this.index, required this.course});
 
   @override
   Widget build(BuildContext context) {
@@ -464,9 +428,18 @@ class CourseCard extends StatelessWidget {
             leading: CircleAvatar(backgroundColor: Colors.deepPurple.shade100, child: Text('$index')),
             title: Text(course['title'], maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold)),
             subtitle: Text('${course['code']} | ${course['credits']} SKS'),
-            trailing: IconButton(
-              icon: Icon(isFavorite ? Icons.favorite : Icons.favorite_border, color: isFavorite ? Colors.red : Colors.grey),
-              onPressed: onFavoriteTap,
+            // TAHAP 7: Consumer untuk rebuild area kecil
+            trailing: Consumer<CourseProvider>(
+              builder: (context, provider, child) {
+                final isFavorite = provider.favorites.contains(course['code']);
+                return IconButton(
+                  icon: Icon(isFavorite ? Icons.favorite : Icons.favorite_border, color: isFavorite ? Colors.red : Colors.grey),
+                  onPressed: () {
+                    // TAHAP 7: Gunakan read() untuk memanggil aksi
+                    context.read<CourseProvider>().toggleFavorite(course['code']);
+                  },
+                );
+              },
             ),
           ),
         ),
