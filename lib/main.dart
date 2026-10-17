@@ -1,9 +1,8 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart'; 
 import 'course_provider.dart';
 import 'models/course.dart'; 
+import 'services/course_service.dart'; // TAHAP 9: Import Service
 
 const String studentName = 'Ni Komang Tri Lindyasari';
 const String studentId = '2415051017';
@@ -34,12 +33,6 @@ class CourseExplorerApp extends StatelessWidget {
   }
 }
 
-Future<Map<String, dynamic>> loadStudentData() async {
-  await Future.delayed(const Duration(seconds: 1)); 
-  final String jsonString = await rootBundle.loadString('assets/data/student_data.json');
-  return jsonDecode(jsonString);
-}
-
 // ==========================================
 // 1. RESPONSIVE SHELL
 // ==========================================
@@ -52,18 +45,22 @@ class ResponsiveShell extends StatefulWidget {
 
 class _ResponsiveShellState extends State<ResponsiveShell> {
   int _currentIndex = 0;
-  late Future<Map<String, dynamic>> _studentFuture;
+  
+  // TAHAP 9: Future sekarang langsung mengambil List<Course> dari Service
+  late Future<List<Course>> _courseFuture;
   
   @override
   void initState() {
     super.initState();
-    _studentFuture = loadStudentData();
+    // TAHAP 9: Menggunakan CourseService untuk load data
+    _courseFuture = CourseService().loadCourses();
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<Map<String, dynamic>>(
-      future: _studentFuture,
+    // TAHAP 9: FutureBuilder diubah menyesuaikan tipe kembalian service
+    return FutureBuilder<List<Course>>(
+      future: _courseFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(body: Center(child: CircularProgressIndicator()));
@@ -72,16 +69,13 @@ class _ResponsiveShellState extends State<ResponsiveShell> {
           return Scaffold(body: Center(child: Text('Gagal memuat data: ${snapshot.error}')));
         }
 
-        final data = snapshot.data!;
-        
-        // TAHAP 8: Konversi data JSON (List<dynamic>) menjadi List Object Model (List<Course>)
-        final rawCourses = data['courses'] as List<dynamic>;
-        final List<Course> courses = rawCourses.map((json) => Course.fromJson(json as Map<String, dynamic>)).toList();
+        // Snapshot langsung berupa List<Course> karena sudah diolah oleh Service
+        final courses = snapshot.data!;
 
         final List<Widget> pages = [
-          HomePage(studentData: data['student'], coursesCount: courses.length),
-          CoursesPage(courses: courses), // Mengirim List<Course> bukan JSON mentah
-          const ProfilePage(),
+          HomePage(coursesCount: courses.length),
+          CoursesPage(courses: courses), 
+          const ProfilePage(), 
         ];
 
         return LayoutBuilder(
@@ -136,13 +130,12 @@ class _ResponsiveShellState extends State<ResponsiveShell> {
 }
 
 // ==========================================
-// 2. HALAMAN HOME (TIDAK BERUBAH)
+// 2. HALAMAN HOME
 // ==========================================
 class HomePage extends StatelessWidget {
-  final dynamic studentData;
   final int coursesCount;
 
-  const HomePage({super.key, required this.studentData, required this.coursesCount});
+  const HomePage({super.key, required this.coursesCount});
 
   @override
   Widget build(BuildContext context) {
@@ -156,7 +149,7 @@ class HomePage extends StatelessWidget {
           const Text('Selamat Datang,', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
           Text(studentName, style: TextStyle(fontSize: 18, color: Colors.deepPurple.shade700)),
           const SizedBox(height: 24),
-          ProfileSummaryCard(studentId: studentId, studentName: studentName),
+          const ProfileSummaryCard(studentId: studentId, studentName: studentName),
           const SizedBox(height: 24),
           Row(
             children: [
@@ -166,7 +159,6 @@ class HomePage extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 24),
-          
           const LocalStateCard(),
           const SizedBox(height: 16),
           const ValueNotifierCard(),
@@ -196,7 +188,7 @@ class HomePage extends StatelessWidget {
 // 3. HALAMAN COURSES
 // ==========================================
 class CoursesPage extends StatelessWidget {
-  final List<Course> courses; // TAHAP 8: Sekarang menerima List<Course>
+  final List<Course> courses;
   const CoursesPage({super.key, required this.courses}); 
 
   @override
@@ -248,7 +240,7 @@ class CoursesPage extends StatelessWidget {
 // 4. HALAMAN DETAIL
 // ==========================================
 class CourseDetailPage extends StatelessWidget {
-  final Course course; // TAHAP 8: Sekarang menggunakan tipe data Course
+  final Course course;
 
   const CourseDetailPage({super.key, required this.course});
 
@@ -283,7 +275,7 @@ class CourseDetailPage extends StatelessWidget {
 }
 
 // ==========================================
-// 5. HALAMAN PROFILE (TIDAK BERUBAH)
+// 5. HALAMAN PROFILE
 // ==========================================
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -410,7 +402,7 @@ class ProfileSummaryCard extends StatelessWidget {
 
 class CourseCard extends StatelessWidget {
   final int index;
-  final Course course; // TAHAP 8: Menerima objek Course
+  final Course course;
 
   const CourseCard({super.key, required this.index, required this.course});
 
@@ -446,9 +438,6 @@ class CourseCard extends StatelessWidget {
   }
 }
 
-// ==========================================
-// TUGAS TAHAP 1: WIDGET LOCAL STATE
-// ==========================================
 class LocalStateCard extends StatefulWidget {
   const LocalStateCard({super.key});
 
@@ -483,9 +472,6 @@ class _LocalStateCardState extends State<LocalStateCard> {
   }
 }
 
-// ==========================================
-// TUGAS TAHAP 4: VALUE NOTIFIER
-// ==========================================
 class ValueNotifierCard extends StatefulWidget {
   const ValueNotifierCard({super.key});
 
