@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart'; 
 import 'course_provider.dart';
 import 'models/course.dart'; 
-import 'services/course_service.dart'; // TAHAP 9: Import Service
+import 'services/course_service.dart'; 
+import 'repositories/course_repository.dart'; 
 
 const String studentName = 'Ni Komang Tri Lindyasari';
 const String studentId = '2415051017';
@@ -45,20 +46,20 @@ class ResponsiveShell extends StatefulWidget {
 
 class _ResponsiveShellState extends State<ResponsiveShell> {
   int _currentIndex = 0;
-  
-  // TAHAP 9: Future sekarang langsung mengambil List<Course> dari Service
   late Future<List<Course>> _courseFuture;
+  
+  // TAHAP 10: Membuat instance Repository dengan menginjeksi Service
+  final CourseRepository _repository = CourseRepository(CourseService());
   
   @override
   void initState() {
     super.initState();
-    // TAHAP 9: Menggunakan CourseService untuk load data
-    _courseFuture = CourseService().loadCourses();
+    // TAHAP 10: Sekarang data diambil melalui Repository, bukan Service langsung
+    _courseFuture = _repository.getCourses();
   }
 
   @override
   Widget build(BuildContext context) {
-    // TAHAP 9: FutureBuilder diubah menyesuaikan tipe kembalian service
     return FutureBuilder<List<Course>>(
       future: _courseFuture,
       builder: (context, snapshot) {
@@ -69,7 +70,6 @@ class _ResponsiveShellState extends State<ResponsiveShell> {
           return Scaffold(body: Center(child: Text('Gagal memuat data: ${snapshot.error}')));
         }
 
-        // Snapshot langsung berupa List<Course> karena sudah diolah oleh Service
         final courses = snapshot.data!;
 
         final List<Widget> pages = [
@@ -494,7 +494,7 @@ class _ValueNotifierCardState extends State<ValueNotifierCard> {
       elevation: 2,
       child: ListTile(
         leading: const Icon(Icons.numbers, color: Colors.deepPurple),
-        title: const Text('Tahap 4: ValueNotifier'),
+        title: const Text('ValueNotifier'),
         subtitle: ValueListenableBuilder<int>(
           valueListenable: _favoriteCount,
           builder: (context, value, child) {
