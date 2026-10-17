@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/course.dart';
+import '../providers/course_provider.dart';
 
 class CourseDetailPage extends StatelessWidget {
   final Course course;
@@ -9,7 +11,27 @@ class CourseDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(course.code), backgroundColor: Theme.of(context).colorScheme.inversePrimary),
+      appBar: AppBar(
+        title: Text(course.code), 
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        actions: [
+          // TAHAP 13: Menambahkan tombol Favorite di Halaman Detail menggunakan Consumer
+          Consumer<CourseProvider>(
+            builder: (context, provider, child) {
+              final isFavorite = provider.favorites.contains(course.code);
+              return IconButton(
+                icon: Icon(
+                  isFavorite ? Icons.favorite : Icons.favorite_border,
+                  color: isFavorite ? Colors.red : null,
+                ),
+                onPressed: () {
+                  context.read<CourseProvider>().toggleFavorite(course.code);
+                },
+              );
+            },
+          ),
+        ],
+      ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
