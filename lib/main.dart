@@ -1,12 +1,19 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart'; 
+import 'course_provider.dart';          
 
 const String studentName = 'Ni Komang Tri Lindyasari';
 const String studentId = '2415051017';
 
 void main() {
-  runApp(const CourseExplorerApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => CourseProvider(),
+      child: const CourseExplorerApp(),
+    ),
+  );
 }
 
 class CourseExplorerApp extends StatelessWidget {
@@ -167,12 +174,8 @@ class HomePage extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           
-          // --- KARTU TAHAP 1 ---
           const LocalStateCard(),
-          
           const SizedBox(height: 16),
-          
-          // --- KARTU TAHAP 4 (VALUE NOTIFIER) ---
           const ValueNotifierCard(),
         ],
       ),
@@ -520,7 +523,6 @@ class ValueNotifierCard extends StatefulWidget {
 }
 
 class _ValueNotifierCardState extends State<ValueNotifierCard> {
-  // 1. Buat ValueNotifier<int> untuk nilai sederhana
   final ValueNotifier<int> _favoriteCount = ValueNotifier<int>(0);
 
   @override
@@ -535,18 +537,16 @@ class _ValueNotifierCardState extends State<ValueNotifierCard> {
       elevation: 2,
       child: ListTile(
         leading: const Icon(Icons.numbers, color: Colors.deepPurple),
-        title: const Text('ValueNotifier'),
-        // 2. Tampilkan nilai dengan ValueListenableBuilder
+        title: const Text('Tahap 4: ValueNotifier'),
         subtitle: ValueListenableBuilder<int>(
           valueListenable: _favoriteCount,
           builder: (context, value, child) {
             return Text('Jumlah di-klik: $value kali');
           },
         ),
-        // 3. Tambahkan button yang mengubah value
         trailing: ElevatedButton(
           onPressed: () {
-            _favoriteCount.value++; // Mengubah nilai TANPA memanggil setState()
+            _favoriteCount.value++; 
           },
           child: const Text('Klik Saya'),
         ),
