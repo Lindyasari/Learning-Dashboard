@@ -47,7 +47,6 @@ class _ResponsiveShellState extends State<ResponsiveShell> {
   int _currentIndex = 0;
   late Future<Map<String, dynamic>> _studentFuture;
   
-  // Variabel sudah ditambahkan 'final' agar bersih dari warning biru
   final Set<String> _favoriteCourseCodes = {};
 
   @override
@@ -81,17 +80,14 @@ class _ResponsiveShellState extends State<ResponsiveShell> {
         final data = snapshot.data!;
         final courses = data['courses'] as List<dynamic>;
 
-        // Daftar Halaman (Tabs)
         final List<Widget> pages = [
           HomePage(studentData: data['student'], coursesCount: courses.length),
           CoursesPage(courses: courses, favorites: _favoriteCourseCodes, onToggleFavorite: _toggleFavorite),
           const ProfilePage(),
         ];
 
-        // Adaptive Layout Logic
         return LayoutBuilder(
           builder: (context, constraints) {
-            // COMPACT / MEDIUM LAYOUT (< 840px)
             if (constraints.maxWidth < 840) {
               return Scaffold(
                 appBar: AppBar(
@@ -112,7 +108,6 @@ class _ResponsiveShellState extends State<ResponsiveShell> {
               );
             }
 
-            // EXPANDED LAYOUT (>= 840px)
             return Scaffold(
               appBar: AppBar(
                 title: const Text('Course Explorer', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -172,8 +167,13 @@ class HomePage extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           
-          // --- INI ADALAH PENAMBAHAN UNTUK TAHAP 1 ---
+          // --- KARTU TAHAP 1 ---
           const LocalStateCard(),
+          
+          const SizedBox(height: 16),
+          
+          // --- KARTU TAHAP 4 (VALUE NOTIFIER) ---
+          const ValueNotifierCard(),
         ],
       ),
     );
@@ -196,6 +196,9 @@ class HomePage extends StatelessWidget {
   }
 }
 
+// ==========================================
+// 3. HALAMAN COURSES
+// ==========================================
 class CoursesPage extends StatelessWidget {
   final List<dynamic> courses;
   final Set<String> favorites;
@@ -254,7 +257,7 @@ class CoursesPage extends StatelessWidget {
 }
 
 // ==========================================
-// 4. HALAMAN DETAIL (MENERIMA DATA)
+// 4. HALAMAN DETAIL
 // ==========================================
 class CourseDetailPage extends StatelessWidget {
   final Map<String, dynamic> course;
@@ -292,7 +295,7 @@ class CourseDetailPage extends StatelessWidget {
 }
 
 // ==========================================
-// 5. HALAMAN PROFILE & FORM FEEDBACK
+// 5. HALAMAN PROFILE
 // ==========================================
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -480,7 +483,6 @@ class LocalStateCard extends StatefulWidget {
 }
 
 class _LocalStateCardState extends State<LocalStateCard> {
-  // Ini adalah contoh LOCAL STATE (Hanya untuk widget ini)
   bool isFavorite = false; 
 
   @override
@@ -497,11 +499,56 @@ class _LocalStateCardState extends State<LocalStateCard> {
             color: isFavorite ? Colors.red : Colors.grey,
           ),
           onPressed: () {
-            // Memanggil setState() untuk Local State
             setState(() {
               isFavorite = !isFavorite;
             });
           },
+        ),
+      ),
+    );
+  }
+}
+
+// ==========================================
+// TUGAS TAHAP 4: VALUE NOTIFIER
+// ==========================================
+class ValueNotifierCard extends StatefulWidget {
+  const ValueNotifierCard({super.key});
+
+  @override
+  State<ValueNotifierCard> createState() => _ValueNotifierCardState();
+}
+
+class _ValueNotifierCardState extends State<ValueNotifierCard> {
+  // 1. Buat ValueNotifier<int> untuk nilai sederhana
+  final ValueNotifier<int> _favoriteCount = ValueNotifier<int>(0);
+
+  @override
+  void dispose() {
+    _favoriteCount.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 2,
+      child: ListTile(
+        leading: const Icon(Icons.numbers, color: Colors.deepPurple),
+        title: const Text('ValueNotifier'),
+        // 2. Tampilkan nilai dengan ValueListenableBuilder
+        subtitle: ValueListenableBuilder<int>(
+          valueListenable: _favoriteCount,
+          builder: (context, value, child) {
+            return Text('Jumlah di-klik: $value kali');
+          },
+        ),
+        // 3. Tambahkan button yang mengubah value
+        trailing: ElevatedButton(
+          onPressed: () {
+            _favoriteCount.value++; // Mengubah nilai TANPA memanggil setState()
+          },
+          child: const Text('Klik Saya'),
         ),
       ),
     );
