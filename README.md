@@ -1,17 +1,14 @@
-# flutter_ui_fundamentals
+# Course Explorer v2 - State Management & Architecture
 
-A new Flutter project.
+**Nama**: Ni Komang Tri Lindyasari  
+**NIM**: 2415051017  
 
-## Getting Started
+## Tanggung Jawab Layer / Folder
+Aplikasi ini telah diaudit dan mengimplementasikan *Separation of Concerns* dengan arah dependensi yang ketat: `Screen/Widget -> Provider -> Repository -> Service/Data Source`.
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+* **`models/`**: Menyimpan cetakan objek struktur data (`Course`).
+* **`services/`**: Menangani detail teknis pengambilan data mentah (parsing JSON dari `rootBundle`).
+* **`repositories/`**: Menyediakan lapisan abstraksi (*interface*) antara sumber data dan pengelola *state*.
+* **`providers/`**: Mengelola *business logic* dan *async state* (loading, error, success) sebagai Single Source of Truth tanpa menyimpan `BuildContext`.
+* **`screens/`**: Berisi halaman-halaman antarmuka utama yang hanya bereaksi terhadap perubahan *state* dari Provider.
+* **`widgets/`**: Berisi potongan-potongan komponen UI yang dapat digunakan berulang kali.
