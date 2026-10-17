@@ -9,9 +9,14 @@ const String studentName = 'Ni Komang Tri Lindyasari';
 const String studentId = '2415051017';
 
 void main() {
+  // Setup struktur Data
+  final service = CourseService();
+  final repository = CourseRepository(service);
+
   runApp(
     ChangeNotifierProvider(
-      create: (context) => CourseProvider(),
+      // TAHAP 11: Injeksi repository dan langsung panggil loadCourses() saat aplikasi dijalankan
+      create: (context) => CourseProvider(repository)..loadCourses(),
       child: const CourseExplorerApp(),
     ),
   );
@@ -46,31 +51,24 @@ class ResponsiveShell extends StatefulWidget {
 
 class _ResponsiveShellState extends State<ResponsiveShell> {
   int _currentIndex = 0;
-  late Future<List<Course>> _courseFuture;
   
-  // TAHAP 10: Membuat instance Repository dengan menginjeksi Service
-  final CourseRepository _repository = CourseRepository(CourseService());
-  
-  @override
-  void initState() {
-    super.initState();
-    // TAHAP 10: Sekarang data diambil melalui Repository, bukan Service langsung
-    _courseFuture = _repository.getCourses();
-  }
-
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<Course>>(
-      future: _courseFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
+    // TAHAP 11: Menggunakan Consumer untuk bereaksi pada status loading/error
+    return Consumer<CourseProvider>(
+      builder: (context, provider, child) {
+        // 3. Tampilkan CircularProgressIndicator saat loading
+        if (provider.isLoading) {
           return const Scaffold(body: Center(child: CircularProgressIndicator()));
         }
-        if (snapshot.hasError) {
-          return Scaffold(body: Center(child: Text('Gagal memuat data: ${snapshot.error}')));
+        
+        // 4. Tampilkan pesan jika error
+        if (provider.error != null) {
+          return Scaffold(body: Center(child: Text('Gagal memuat data: ${provider.error}')));
         }
 
-        final courses = snapshot.data!;
+        // 5. Jika sukses, ambil data list
+        final courses = provider.courses;
 
         final List<Widget> pages = [
           HomePage(coursesCount: courses.length),
