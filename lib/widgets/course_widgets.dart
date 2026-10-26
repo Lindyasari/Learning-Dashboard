@@ -54,7 +54,7 @@ class CourseCard extends StatelessWidget {
           child: ListTile(
             leading: CircleAvatar(backgroundColor: Colors.deepPurple.shade100, child: Text('$index')),
             title: Text(course.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: Text('${course.code} | ${course.credits} SKS'),
+            subtitle: Text('${course.code} | ${course.credits} SKS | Status: ${course.status}'),
             trailing: Consumer<CourseProvider>(
               builder: (context, provider, child) {
                 final isFavorite = provider.favorites.contains(course.code);
