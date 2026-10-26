@@ -11,7 +11,7 @@ Future<void> main() async {
 
   await Supabase.initialize(
     url: 'https://uoyixnszxovttndyodyf.supabase.co',
-    publishableKey: 'sb_publishable_FOJnVixg06R12U_6LjZlTw_adatZlQH'
+    publishableKey: 'sb_publishable_FOJnVixg06R12U_6LjZlTw_adatZlQH',
   );
 
   final service = CourseApiService('https://course-api-pearl.vercel.app');
