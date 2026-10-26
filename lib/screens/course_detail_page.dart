@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/course.dart';
 import '../providers/course_provider.dart';
+import 'edit_course_page.dart';
 
 class CourseDetailPage extends StatelessWidget {
   final Course course;
@@ -15,7 +16,17 @@ class CourseDetailPage extends StatelessWidget {
         title: Text(course.code), 
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         actions: [
-          // TAHAP 13: Menambahkan tombol Favorite di Halaman Detail menggunakan Consumer
+          IconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => EditCoursePage(course: course),
+                ),
+              );
+            },
+          ),
           Consumer<CourseProvider>(
             builder: (context, provider, child) {
               final isFavorite = provider.favorites.contains(course.code);

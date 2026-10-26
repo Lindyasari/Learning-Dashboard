@@ -39,7 +39,7 @@ class CoursesPage extends StatelessWidget {
                       style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                   ElevatedButton.icon(
                     onPressed: () {
-                      print('TOMBOL TAMBAH BERHASIL DIKLIK!');
+                      print;
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => const AddCoursePage()),
