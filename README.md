@@ -12,3 +12,9 @@ Aplikasi ini telah diaudit dan mengimplementasikan *Separation of Concerns* deng
 * **`providers/`**: Mengelola *business logic* dan *async state* (loading, error, success) sebagai Single Source of Truth tanpa menyimpan `BuildContext`.
 * **`screens/`**: Berisi halaman-halaman antarmuka utama yang hanya bereaksi terhadap perubahan *state* dari Provider.
 * **`widgets/`**: Berisi potongan-potongan komponen UI yang dapat digunakan berulang kali.
+
+## Catatan REST API (Tahap 1)
+* **Endpoint yang digunakan**: `https://course-api-pearl.vercel.app/courses`
+* **HTTP Method**: GET
+* **Status Code**: 200 OK
+* **Resource JSON memiliki field**: `id`, `code`, `title`, `credits`, dan `status`.
