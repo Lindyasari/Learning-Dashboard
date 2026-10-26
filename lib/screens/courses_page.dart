@@ -1,105 +1,89 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
-import '../models/course.dart';
+import 'package:provider/provider.dart';
+import '../providers/course_provider.dart';
 import '../widgets/course_widgets.dart';
+import '../widgets/error_view.dart';
 
 // Nama: Ni Komang Tri Lindyasari
 // NIM: 2415051017
 
-class CoursesPage extends StatefulWidget {
-  final List<Course> courses;
-  const CoursesPage({super.key, required this.courses});
-
-  @override
-  State<CoursesPage> createState() => _CoursesPageState();
-}
-
-class _CoursesPageState extends State<CoursesPage> {
-  // Variabel state untuk menyimpan list yang akan ditampilkan di layar
-  List<Course> _displayCourses = [];
-  final String apiUrl = 'https://course-api-pearl.vercel.app/courses';
-
-  @override
-  void initState() {
-    super.initState();
-    _displayCourses = widget.courses; // Tampilkan dummy saat pertama kali buka
-  }
-
-  Future<void> testFetchCourses() async {
-    try {
-      final response = await http.get(Uri.parse(apiUrl));
-      if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
-        // Konversi response JSON list menjadi List<Course> dan update layar
-        setState(() {
-          _displayCourses = data.map((json) => Course.fromJson(json)).toList();
-        });
-        debugPrint('Berhasil memuat ${_displayCourses.length} data API ke layar');
-      } else {
-        throw Exception('HTTP ${response.statusCode}');
-      }
-    } catch (e) {
-      debugPrint('Terjadi Error: $e');
-    }
-  }
+class CoursesPage extends StatelessWidget {
+  const CoursesPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    // Dengarkan perubahan state dari provider
+    final provider = context.watch<CourseProvider>();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+        const Padding(
+          padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Ni Komang Tri Lindyasari - 2415051017',
                 style: TextStyle(fontSize: 14, color: Colors.blueGrey),
               ),
-              const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text('Katalog Mata Kuliah',
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                  ElevatedButton(
-                    onPressed: () => testFetchCourses(),
-                    child: const Text('Test API GET'),
-                  ),
-                ],
-              ),
+              SizedBox(height: 8),
+              Text('Katalog Mata Kuliah',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             ],
           ),
         ),
         Expanded(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              if (constraints.maxWidth < 600) {
-                return ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: _displayCourses.length,
-                  itemBuilder: (context, index) =>
-                      CourseCard(index: index + 1, course: _displayCourses[index]),
-                );
-              }
-              return GridView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: constraints.maxWidth < 900 ? 2 : 3,
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
-                  mainAxisExtent: 100,
-                ),
-                itemCount: _displayCourses.length,
-                itemBuilder: (context, index) =>
-                    CourseCard(index: index + 1, course: _displayCourses[index]),
-              );
-            },
-          ),
+          // Panggil fungsi pembangun konten berdasarkan state
+          child: _buildContent(context, provider),
         ),
       ],
+    );
+  }
+
+  Widget _buildContent(BuildContext context, CourseProvider provider) {
+    // 1. Loading State
+    if (provider.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    // 2. Error State
+    if (provider.error != null) {
+      return ErrorView(
+        message: provider.error!,
+        onRetry: provider.loadCourses,
+      );
+    }
+
+    // 3. Empty State
+    if (provider.courses.isEmpty) {
+      return const Center(child: Text('Data course belum tersedia'));
+    }
+
+    // 4. Success State (Tampilkan list data)
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 600) {
+          return ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: provider.courses.length,
+            itemBuilder: (context, index) =>
+                CourseCard(index: index + 1, course: provider.courses[index]),
+          );
+        }
+        return GridView.builder(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: constraints.maxWidth < 900 ? 2 : 3,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+            mainAxisExtent: 100,
+          ),
+          itemCount: provider.courses.length,
+          itemBuilder: (context, index) =>
+                CourseCard(index: index + 1, course: provider.courses[index]),
+        );
+      },
     );
   }
 }

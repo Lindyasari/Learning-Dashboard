@@ -19,13 +19,13 @@ class _ResponsiveShellState extends State<ResponsiveShell> {
   Widget build(BuildContext context) {
     return Consumer<CourseProvider>(
       builder: (context, provider, child) {
-        if (provider.isLoading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
-        if (provider.error != null) return Scaffold(body: Center(child: Text('Gagal memuat data: ${provider.error}')));
+        //if (provider.isLoading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
+        //if (provider.error != null) return Scaffold(body: Center(child: Text('Gagal memuat data: ${provider.error}')));
 
         final courses = provider.courses;
         final List<Widget> pages = [
           HomePage(coursesCount: courses.length),
-          CoursesPage(courses: courses), 
+          const CoursesPage (),
           const FavoritesPage(), // TAHAP 13: Sisipkan halaman di index ke-2
           const ProfilePage(), 
         ];
