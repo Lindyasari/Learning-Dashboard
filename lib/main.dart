@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'services/course_service.dart';
+import 'services/course_api_service.dart'; // 1. Ubah import ini
 import 'repositories/course_repository.dart';
 import 'providers/course_provider.dart';
 import 'screens/responsive_shell.dart';
 
 void main() {
-  final service = CourseService();
+  final service = CourseApiService('https://course-api-pearl.vercel.app');
   final repository = CourseRepository(service);
 
   runApp(
