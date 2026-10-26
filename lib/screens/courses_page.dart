@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/course_provider.dart';
 import '../widgets/course_widgets.dart';
 import '../widgets/error_view.dart';
+import 'add_course_page.dart';
 
 // Nama: Ni Komang Tri Lindyasari
 // NIM: 2415051017
@@ -18,18 +19,39 @@ class CoursesPage extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
+        // CATATAN: 'const' di depan Padding dihapus karena di dalamnya ada fungsi Navigator yang dinamis
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              const Text(
                 'Ni Komang Tri Lindyasari - 2415051017',
                 style: TextStyle(fontSize: 14, color: Colors.blueGrey),
               ),
-              SizedBox(height: 8),
-              Text('Katalog Mata Kuliah',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              
+              // --- KODE YANG DIUBAH UNTUK TAHAP 6 ADA DI SINI ---
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Katalog Mata Kuliah',
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      print('TOMBOL TAMBAH BERHASIL DIKLIK!');
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const AddCoursePage()),
+                      );
+                    },
+                    icon: const Icon(Icons.add, size: 16),
+                    label: const Text('Tambah'),
+                  ),
+                ],
+              ),
+              // --------------------------------------------------
+              
             ],
           ),
         ),

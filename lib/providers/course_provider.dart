@@ -39,4 +39,25 @@ class CourseProvider extends ChangeNotifier {
     }
     notifyListeners(); 
   }
+
+  bool _isSaving = false;
+  bool get isSaving => _isSaving;
+
+  Future<bool> addCourse(Course course) async {
+    _isSaving = true;
+    notifyListeners(); // Memicu UI untuk disable tombol
+
+    try {
+      await repository.createCourse(course);
+      await loadCourses(); // Merefresh list setelah berhasil membuat data baru
+      return true; // Berhasil
+    } catch (e) {
+      error = e.toString();
+      return false; // Gagal
+    } finally {
+      _isSaving = false;
+      notifyListeners(); // Mengaktifkan tombol kembali
+    }
+  }
 }
+
