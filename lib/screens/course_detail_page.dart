@@ -27,6 +27,53 @@ class CourseDetailPage extends StatelessWidget {
               );
             },
           ),
+
+    // Nama : Ni Komang Tri Lindyasari
+    // NIM : 2415051017
+    
+          IconButton(
+            icon: const Icon(Icons.delete, color: Colors.red),
+            onPressed: () async {
+              // Tampilkan AlertDialog konfirmasi sebelum menghapus
+              final confirm = await showDialog<bool>(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Hapus Mata Kuliah'),
+                  content: const Text('Apakah Anda yakin ingin menghapus course ini?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      child: const Text('Batal'),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, true),
+                      child: const Text('Hapus', style: TextStyle(color: Colors.red)),
+                    ),
+                  ],
+                ),
+              );
+
+              if (confirm == true) {
+                if (!context.mounted) return;
+                
+                final provider = context.read<CourseProvider>();
+                final success = await provider.deleteCourse(course.id!, course.code);
+
+                if (!context.mounted) return;
+
+                if (success) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Berhasil menghapus mata kuliah')),
+                  );
+                  Navigator.pop(context); // Kembali ke halaman utama setelah hapus
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Gagal menghapus: ${provider.error}')),
+                  );
+                }
+              }
+            },
+          ),
           Consumer<CourseProvider>(
             builder: (context, provider, child) {
               final isFavorite = provider.favorites.contains(course.code);

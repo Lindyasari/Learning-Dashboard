@@ -76,5 +76,28 @@ class CourseProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  Future<bool> deleteCourse(int id, String courseCode) async {
+    _isSaving = true;
+    notifyListeners();
+
+    try {
+      await repository.deleteCourse(id);
+      
+      // Hapus juga dari favorites jika ada agar tidak jadi data yatim
+      if (_favorites.contains(courseCode)) {
+        _favorites.remove(courseCode);
+      }
+
+      await loadCourses(); // Refresh list setelah data dihapus
+      return true;
+    } catch (e) {
+      error = e.toString();
+      return false;
+    } finally {
+      _isSaving = false;
+      notifyListeners();
+    }
+  }
 }
 
