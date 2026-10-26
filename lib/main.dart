@@ -6,6 +6,9 @@ import 'repositories/course_repository.dart';
 import 'providers/course_provider.dart';
 import 'screens/responsive_shell.dart';
 
+// Nama: Ni Komang Tri Lindyasari
+// NIM: 2415051017
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
