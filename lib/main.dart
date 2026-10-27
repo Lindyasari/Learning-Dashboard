@@ -44,3 +44,6 @@ class CourseExplorerApp extends StatelessWidget {
     );
   }
 }
+
+// Tahap 17: Uji coba Error Handling (Kasus A-E) selesai.
+// Security check: Hanya menggunakan publishable anon key.
