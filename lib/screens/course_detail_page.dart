@@ -2,77 +2,114 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/course.dart';
 import '../providers/course_provider.dart';
+import '../services/profile_service.dart';
+import '../widgets/role_guard.dart';
 import 'edit_course_page.dart';
 
-class CourseDetailPage extends StatelessWidget {
+class CourseDetailPage extends StatefulWidget {
   final Course course;
 
   const CourseDetailPage({super.key, required this.course});
 
   @override
+  State<CourseDetailPage> createState() => _CourseDetailPageState();
+}
+
+class _CourseDetailPageState extends State<CourseDetailPage> {
+  String _role = 'seeker';
+
+  @override
+  void initState() {
+    super.initState();
+    ProfileService().getMyProfile().then((p) {
+      if (mounted && p != null) {
+        setState(() => _role = p.role);
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final course = widget.course;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(course.code), 
+        title: Text(course.code),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.edit),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => EditCoursePage(course: course),
-                ),
-              );
-            },
+          RoleGuard(
+            role: _role,
+            allowed: const ['owner', 'admin'],
+            child: IconButton(
+              icon: const Icon(Icons.edit),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => EditCoursePage(course: course),
+                  ),
+                );
+              },
+            ),
           ),
 
-    // Nama : Ni Komang Tri Lindyasari
-    // NIM : 2415051017
-    
-          IconButton(
-            icon: const Icon(Icons.delete, color: Colors.red),
-            onPressed: () async {
-              // Tampilkan AlertDialog konfirmasi sebelum menghapus
-              final confirm = await showDialog<bool>(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Hapus Mata Kuliah'),
-                  content: const Text('Apakah Anda yakin ingin menghapus course ini?'),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context, false),
-                      child: const Text('Batal'),
+          // Nama : Ni Komang Tri Lindyasari
+          // NIM : 2415051017
+          RoleGuard(
+            role: _role,
+            allowed: const ['owner', 'admin'],
+            child: IconButton(
+              icon: const Icon(Icons.delete, color: Colors.red),
+              onPressed: () async {
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Hapus Mata Kuliah'),
+                    content: const Text(
+                      'Apakah Anda yakin ingin menghapus course ini?',
                     ),
-                    TextButton(
-                      onPressed: () => Navigator.pop(context, true),
-                      child: const Text('Hapus', style: TextStyle(color: Colors.red)),
-                    ),
-                  ],
-                ),
-              );
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text('Batal'),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        child: const Text(
+                          'Hapus',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
 
-              if (confirm == true) {
-                if (!context.mounted) return;
-                
-                final provider = context.read<CourseProvider>();
-                final success = await provider.deleteCourse(course.id!, course.code);
+                if (confirm == true) {
+                  if (!context.mounted) return;
 
-                if (!context.mounted) return;
+                  final provider = context.read<CourseProvider>();
+                  final success =
+                      await provider.deleteCourse(course.id!, course.code);
 
-                if (success) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Berhasil menghapus mata kuliah')),
-                  );
-                  Navigator.pop(context); // Kembali ke halaman utama setelah hapus
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Gagal menghapus: ${provider.error}')),
-                  );
+                  if (!context.mounted) return;
+
+                  if (success) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Berhasil menghapus mata kuliah'),
+                      ),
+                    );
+                    Navigator.pop(context);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Gagal menghapus: ${provider.error}'),
+                      ),
+                    );
+                  }
                 }
-              }
-            },
+              },
+            ),
           ),
           Consumer<CourseProvider>(
             builder: (context, provider, child) {
@@ -95,11 +132,26 @@ class CourseDetailPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(course.title, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.deepPurple)),
+            Text(
+              course.title,
+              style: const TextStyle(
+                fontSize: 26,
+                fontWeight: FontWeight.bold,
+                color: Colors.deepPurple,
+              ),
+            ),
             const SizedBox(height: 16),
             const Divider(),
-            ListTile(leading: const Icon(Icons.school), title: const Text('Beban Studi'), subtitle: Text('${course.credits} SKS')),
-            ListTile(leading: const Icon(Icons.info), title: const Text('Status'), subtitle: Text(course.status)),
+            ListTile(
+              leading: const Icon(Icons.school),
+              title: const Text('Beban Studi'),
+              subtitle: Text('${course.credits} SKS'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.info),
+              title: const Text('Status'),
+              subtitle: Text(course.status),
+            ),
             const Spacer(),
             SizedBox(
               width: double.infinity,
@@ -108,7 +160,7 @@ class CourseDetailPage extends StatelessWidget {
                 icon: const Icon(Icons.arrow_back),
                 label: const Text('Kembali ke Katalog'),
               ),
-            )
+            ),
           ],
         ),
       ),

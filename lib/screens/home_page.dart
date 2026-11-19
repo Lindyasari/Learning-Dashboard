@@ -3,28 +3,24 @@ import 'package:provider/provider.dart';
 import '../providers/course_provider.dart';
 import '../services/profile_service.dart';
 import '../widgets/course_widgets.dart';
+import '../widgets/role_guard.dart';
 import 'profile_page.dart';
 
-class HomePage extends StatefulWidget {
+class HomePage extends StatelessWidget {
   final int coursesCount;
-  const HomePage({super.key, required this.coursesCount});
+  final UserProfile? profile;
 
-  @override
-  State<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  late final Future<UserProfile?> _profileFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _profileFuture = ProfileService().getMyProfile();
-  }
+  const HomePage({
+    super.key,
+    required this.coursesCount,
+    this.profile,
+  });
 
   @override
   Widget build(BuildContext context) {
     final favoriteCount = context.watch<CourseProvider>().favorites.length;
+    final p = profile;
+    final role = p?.role ?? 'seeker';
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24.0),
@@ -41,64 +37,97 @@ class _HomePageState extends State<HomePage> {
           ),
           const SizedBox(height: 16),
 
-          // Kartu Informasi Akun & Role (Praktik 3)
-          FutureBuilder<UserProfile?>(
-            future: _profileFuture,
-            builder: (context, snap) {
-              if (snap.connectionState != ConnectionState.done) {
-                return const Card(
-                  child: Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Center(child: CircularProgressIndicator()),
+          // Kartu Informasi Akun & Role
+          if (p == null)
+            const Card(
+              child: ListTile(
+                leading: Icon(Icons.error_outline, color: Colors.red),
+                title: Text('Gagal memuat profil pengguna'),
+              ),
+            )
+          else
+            Card(
+              elevation: 1,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                children: [
+                  ListTile(
+                    leading: const Icon(Icons.person),
+                    title: const Text('Nama'),
+                    subtitle: Text(p.name.isEmpty ? '-' : p.name),
                   ),
-                );
-              }
-              if (snap.hasError || snap.data == null) {
-                return const Card(
-                  child: ListTile(
-                    leading: Icon(Icons.error_outline, color: Colors.red),
-                    title: Text('Gagal memuat profil pengguna'),
+                  const Divider(height: 1),
+                  ListTile(
+                    leading: const Icon(Icons.email),
+                    title: const Text('Email'),
+                    subtitle: Text(p.email),
                   ),
-                );
-              }
-              final p = snap.data!;
-              return Card(
-                elevation: 1,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  children: [
-                    ListTile(
-                      leading: const Icon(Icons.person),
-                      title: const Text('Nama'),
-                      subtitle: Text(p.name.isEmpty ? '-' : p.name),
-                    ),
-                    const Divider(height: 1),
-                    ListTile(
-                      leading: const Icon(Icons.email),
-                      title: const Text('Email'),
-                      subtitle: Text(p.email),
-                    ),
-                    const Divider(height: 1),
-                    ListTile(
-                      leading: const Icon(Icons.badge),
-                      title: const Text('Role'),
-                      subtitle: Text(p.role),
-                      trailing: Chip(
-                        label: Text(
-                          p.role.toUpperCase(),
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
+                  const Divider(height: 1),
+                  ListTile(
+                    leading: const Icon(Icons.badge),
+                    title: const Text('Role'),
+                    subtitle: Text(p.role),
+                    trailing: Chip(
+                      label: Text(
+                        p.role.toUpperCase(),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
-                  ],
+                  ),
+                ],
+              ),
+            ),
+
+          const SizedBox(height: 16),
+
+          // Menu Berdasarkan Hak Akses (Praktik 4)
+          Card(
+            elevation: 1,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              children: [
+                const ListTile(
+                  leading: Icon(Icons.list),
+                  title: Text('Daftar Course'),
+                  subtitle: Text('Tersedia untuk semua pengguna'),
                 ),
-              );
-            },
+                RoleGuard(
+                  role: role,
+                  allowed: const ['owner', 'admin'],
+                  child: const Column(
+                    children: [
+                      Divider(height: 1),
+                      ListTile(
+                        leading: Icon(Icons.library_books),
+                        title: Text('My Courses'),
+                        subtitle: Text('Tambah, edit, dan hapus course'),
+                      ),
+                    ],
+                  ),
+                ),
+                RoleGuard(
+                  role: role,
+                  allowed: const ['admin'],
+                  child: const Column(
+                    children: [
+                      Divider(height: 1),
+                      ListTile(
+                        leading: Icon(Icons.admin_panel_settings),
+                        title: Text('Kelola Data (Admin)'),
+                        subtitle: Text('Hak akses penuh administrator'),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
 
           const SizedBox(height: 16),
@@ -110,7 +139,7 @@ class _HomePageState extends State<HomePage> {
                 child: _buildInfoBox(
                   context,
                   'Total Topik',
-                  '${widget.coursesCount} Courses',
+                  '$coursesCount Courses',
                   Icons.library_books,
                 ),
               ),
@@ -129,6 +158,7 @@ class _HomePageState extends State<HomePage> {
           const LocalStateCard(),
           const SizedBox(height: 16),
           const ValueNotifierCard(),
+          const SizedBox(height: 72), // ruang agar tidak tertutup FAB
         ],
       ),
     );
