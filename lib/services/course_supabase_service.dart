@@ -3,10 +3,12 @@
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/course.dart';
-import 'course_data_source.dart'; 
+import 'course_data_source.dart';
 
 class CourseSupabaseService implements CourseDataSource {
   final supabase = Supabase.instance.client;
+
+  String get _uid => supabase.auth.currentUser!.id;
 
   @override
   Future<List<Course>> getCourses() async {
@@ -20,12 +22,16 @@ class CourseSupabaseService implements CourseDataSource {
         .toList();
   }
 
-  // Sementara, agar kelas tetap dapat dikompilasi:
- @override
+  @override
   Future<Course> createCourse(Course course) async {
+    final payload = {
+      ...course.toJson(),
+      'owner_id': _uid,
+    };
+
     final row = await supabase
         .from('courses')
-        .insert(course.toJson())
+        .insert(payload)
         .select()
         .single();
 
@@ -34,17 +40,27 @@ class CourseSupabaseService implements CourseDataSource {
 
   @override
   Future<void> updateCourse(int id, Course course) async {
-    await supabase
+    final rows = await supabase
         .from('courses')
         .update(course.toJson())
-        .eq('id', id);
+        .eq('id', id)
+        .select();
+
+    if ((rows as List).isEmpty) {
+      throw Exception('Akses ditolak: Anda hanya boleh mengubah course milik sendiri.');
+    }
   }
 
   @override
   Future<void> deleteCourse(int id) async {
-    await supabase
+    final rows = await supabase
         .from('courses')
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .select();
+
+    if ((rows as List).isEmpty) {
+      throw Exception('Akses ditolak: Anda hanya boleh menghapus course milik sendiri.');
+    }
   }
 }

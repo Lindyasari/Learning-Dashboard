@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/course.dart';
 import '../providers/course_provider.dart';
 import '../services/profile_service.dart';
-import '../widgets/role_guard.dart';
 import 'edit_course_page.dart';
 
 class CourseDetailPage extends StatefulWidget {
@@ -31,16 +31,17 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
   @override
   Widget build(BuildContext context) {
     final course = widget.course;
+    final myId = Supabase.instance.client.auth.currentUser?.id;
+    final isMine = course.ownerId != null && course.ownerId == myId;
+    final canModify = _role == 'admin' || (_role == 'owner' && isMine);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(course.code),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         actions: [
-          RoleGuard(
-            role: _role,
-            allowed: const ['owner', 'admin'],
-            child: IconButton(
+          if (canModify)
+            IconButton(
               icon: const Icon(Icons.edit),
               onPressed: () {
                 Navigator.push(
@@ -51,14 +52,11 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                 );
               },
             ),
-          ),
 
           // Nama : Ni Komang Tri Lindyasari
           // NIM : 2415051017
-          RoleGuard(
-            role: _role,
-            allowed: const ['owner', 'admin'],
-            child: IconButton(
+          if (canModify)
+            IconButton(
               icon: const Icon(Icons.delete, color: Colors.red),
               onPressed: () async {
                 final confirm = await showDialog<bool>(
@@ -110,7 +108,6 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                 }
               },
             ),
-          ),
           Consumer<CourseProvider>(
             builder: (context, provider, child) {
               final isFavorite = provider.favorites.contains(course.code);
