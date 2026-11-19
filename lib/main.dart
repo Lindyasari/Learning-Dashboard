@@ -1,16 +1,18 @@
-import 'package:firebase_core/firebase_core.dart'; // <-- TAMBAHKAN INI
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart'; // <-- TAMBAHAN PRAKTIK 10
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app_keys.dart';
-import 'firebase_options.dart'; // <-- TAMBAHKAN INI
+import 'firebase_options.dart';
 import 'providers/course_provider.dart';
 import 'repositories/course_repository.dart';
 import 'screens/login_page.dart';
 import 'screens/responsive_shell.dart';
 import 'services/auth_service.dart';
 import 'services/course_supabase_service.dart';
+import 'services/notification_service.dart'; // <-- TAMBAHAN PRAKTIK 10
 
 // Nama: Ni Komang Tri Lindyasari
 // NIM: 2415051017
@@ -18,10 +20,15 @@ import 'services/course_supabase_service.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // <-- TAMBAHKAN INI
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  FirebaseMessaging.onBackgroundMessage(
+    firebaseMessagingBackgroundHandler,
+  ); // <-- TAMBAHAN PRAKTIK 10
+
+  // Inisialisasi izin notifikasi, FCM token, dan listener foreground
+  await NotificationService.instance.init();
 
   await Supabase.initialize(
     url: 'https://uoyixnszxovttndyodyf.supabase.co',

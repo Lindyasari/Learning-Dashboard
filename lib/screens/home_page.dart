@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/course_provider.dart';
-import '../services/notification_service.dart'; // <-- TAMBAHKAN INI
+import '../services/notification_service.dart';
 import '../services/profile_service.dart';
 import '../widgets/course_widgets.dart';
 import '../widgets/role_guard.dart';
@@ -25,8 +25,15 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    // Meminta izin notifikasi saat HomePage dibuka
-    NotificationService.instance.requestPermission();
+    _initNotification();
+  }
+
+  Future<void> _initNotification() async {
+    await NotificationService.instance.requestPermission();
+    await NotificationService.instance.getToken();
+    NotificationService.instance.listenTokenRefresh((newToken) {
+      debugPrint('Token baru diterima: $newToken');
+    });
   }
 
   @override
