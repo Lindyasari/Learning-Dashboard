@@ -1,8 +1,10 @@
+import 'package:firebase_core/firebase_core.dart'; // <-- TAMBAHKAN INI
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app_keys.dart';
+import 'firebase_options.dart'; // <-- TAMBAHKAN INI
 import 'providers/course_provider.dart';
 import 'repositories/course_repository.dart';
 import 'screens/login_page.dart';
@@ -15,6 +17,11 @@ import 'services/course_supabase_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // <-- TAMBAHKAN INI
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   await Supabase.initialize(
     url: 'https://uoyixnszxovttndyodyf.supabase.co',
