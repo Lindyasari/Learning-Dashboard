@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'services/course_supabase_service.dart'; 
+import 'services/course_supabase_service.dart';
 import 'repositories/course_repository.dart';
 import 'providers/course_provider.dart';
-import 'screens/responsive_shell.dart';
+import 'screens/login_page.dart';
 
 // Nama: Ni Komang Tri Lindyasari
 // NIM: 2415051017
@@ -40,10 +40,7 @@ class CourseExplorerApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const ResponsiveShell(), 
+      home: const LoginPage(),
     );
   }
 }
-
-// Tahap 17: Uji coba Error Handling (Kasus A-E) selesai.
-// Security check: Hanya menggunakan publishable anon key.
