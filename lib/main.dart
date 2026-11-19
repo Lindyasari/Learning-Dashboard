@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'services/course_supabase_service.dart';
-import 'repositories/course_repository.dart';
+
+import 'app_keys.dart';
 import 'providers/course_provider.dart';
+import 'repositories/course_repository.dart';
 import 'screens/login_page.dart';
+import 'screens/responsive_shell.dart';
+import 'services/auth_service.dart';
+import 'services/course_supabase_service.dart';
 
 // Nama: Ni Komang Tri Lindyasari
 // NIM: 2415051017
@@ -16,6 +20,18 @@ Future<void> main() async {
     url: 'https://uoyixnszxovttndyodyf.supabase.co',
     publishableKey: 'sb_publishable_FOJnVixg06R12U_6LjZlTw_adatZlQH',
   );
+
+  // Mendengarkan perubahan session (misalnya saat logout atau session habis)
+  Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+    debugPrint('Auth event: ${data.event}');
+
+    if (data.event == AuthChangeEvent.signedOut) {
+      navigatorKey.currentState?.pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const LoginPage()),
+        (route) => false,
+      );
+    }
+  });
 
   final service = CourseSupabaseService();
   final repository = CourseRepository(service);
@@ -40,7 +56,11 @@ class CourseExplorerApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const LoginPage(),
+      navigatorKey: navigatorKey,
+      scaffoldMessengerKey: messengerKey,
+      home: AuthService.instance.isLoggedIn
+          ? const ResponsiveShell() // Session Exists -> Home
+          : const LoginPage(), // No Session -> Login
     );
   }
 }
