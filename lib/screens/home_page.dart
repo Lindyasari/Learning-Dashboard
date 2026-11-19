@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/course_provider.dart';
+import '../services/notification_service.dart'; // <-- TAMBAHKAN INI
 import '../services/profile_service.dart';
 import '../widgets/course_widgets.dart';
 import '../widgets/role_guard.dart';
 import 'profile_page.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   final int coursesCount;
   final UserProfile? profile;
 
@@ -17,9 +18,21 @@ class HomePage extends StatelessWidget {
   });
 
   @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  @override
+  void initState() {
+    super.initState();
+    // Meminta izin notifikasi saat HomePage dibuka
+    NotificationService.instance.requestPermission();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final favoriteCount = context.watch<CourseProvider>().favorites.length;
-    final p = profile;
+    final p = widget.profile;
     final role = p?.role ?? 'seeker';
 
     return SingleChildScrollView(
@@ -139,7 +152,7 @@ class HomePage extends StatelessWidget {
                 child: _buildInfoBox(
                   context,
                   'Total Topik',
-                  '$coursesCount Courses',
+                  '${widget.coursesCount} Courses',
                   Icons.library_books,
                 ),
               ),
